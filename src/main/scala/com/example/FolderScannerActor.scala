@@ -9,19 +9,24 @@ case class DoneWriting()
 
 class FolderScannerActor extends Actor {
 
-  import FolderScannerActor._
-
   val log = Logging.getLogger(context.system, this)
 
   var filesNumber = 0
   var responsesNumber = 0
   var words = new ListBuffer[String]
 
+  def listFiles(folder: File): List[File] = {
+    if (folder.exists && folder.isDirectory) {
+      folder.listFiles.toList
+    } else {
+      List.empty
+    }
+  }
+
   def receive = {
-    case path: String => {
-      log.info(s"Scanning ${path}")
-      val directory = new File(path)
-      val files = getFilesFromFolder(directory)
+    case folder: File => {
+      log.info(s"Scanning ${folder.getAbsoluteFile}")
+      val files = listFiles(folder)
       filesNumber = files.size
       files.foreach(file => context.actorOf(FileReaderActor.props) ! file)
     }
@@ -33,7 +38,7 @@ class FolderScannerActor extends Actor {
         context.actorOf(FileWriterActor.props) ! words.toList
       }
     }
-    case d: DoneWriting => {
+    case _: DoneWriting => {
       log.info("shutting down")
       context.system.shutdown()
     }
@@ -43,17 +48,5 @@ class FolderScannerActor extends Actor {
 }
 
 object FolderScannerActor {
-
   def props = Props(new FolderScannerActor)
-
-  def getFilesFromFolder(folder: File): List[File] = {
-    if (folder.exists && folder.isDirectory) {
-      println("FILES EXIT")
-      folder.listFiles.toList
-    } else {
-      println("FILES DOES NOT EXIT")
-      List[File]()
-    }
-  }
-
 }

@@ -5,7 +5,6 @@ import java.io.File
 import akka.actor.{Actor, PoisonPill, Props}
 import akka.event.Logging
 
-import scala.collection.mutable.ListBuffer
 import scala.io.Source
 
 class FileReaderActor extends Actor {
@@ -14,12 +13,8 @@ class FileReaderActor extends Actor {
 
   def receive = {
     case f: File => {
-
       log.info(s"Reading file ${f.getName}")
-      var words = new ListBuffer[String]
-      Source.fromFile(f).getLines().foreach(line => words += line )
-
-      sender() ! words.toList
+      sender() ! Source.fromFile(f).getLines().toList
       self ! PoisonPill
     }
     case _ => log.info("Still waiting for a text file")
