@@ -1,11 +1,13 @@
 package com.example
 
 import java.io.File
-import akka.actor.{PoisonPill, Props, Actor}
+
+import akka.actor.{Actor, Props}
 import akka.event.Logging
+
 import scala.collection.mutable.ListBuffer
 
-case class DoneWriting()
+case object DoneWriting
 
 class FolderScannerActor extends Actor {
 
@@ -38,9 +40,9 @@ class FolderScannerActor extends Actor {
         context.actorOf(FileWriterActor.props) ! words.toList
       }
     }
-    case _: DoneWriting => {
+    case DoneWriting => {
       log.info("shutting down")
-      context.system.shutdown()
+      context.system.terminate()
     }
     case _ => log.info("Nothing to scan...")
   }

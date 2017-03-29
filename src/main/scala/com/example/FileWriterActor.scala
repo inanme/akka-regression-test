@@ -9,7 +9,7 @@ class FileWriterActor extends Actor {
   def receive = {
     case words: List[x] => {
       println(s"doing fake write ${words}")
-      sender() ! DoneWriting()
+      sender() ! DoneWriting
       self ! PoisonPill
     }
   }
