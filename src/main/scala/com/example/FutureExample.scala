@@ -2,7 +2,7 @@ package com.example
 
 import java.util.concurrent.TimeUnit
 
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.util.Random
@@ -61,15 +61,15 @@ object FutureExample extends App {
     water.temperature > 100
   }
 
-//  val acceptable: Future[Boolean] = for {
-//    heatedWater <- heatWater(Water(25))
-//    okay <- temperatureOkay(heatedWater)
-//  } yield okay
-//
-//  acceptable.onComplete {
-//    case Success(result) => println(s"acceptable is $result")
-//    case Failure(ex) => println("acceptable is " + ex.getMessage)
-//  }
+  //  val acceptable: Future[Boolean] = for {
+  //    heatedWater <- heatWater(Water(25))
+  //    okay <- temperatureOkay(heatedWater)
+  //  } yield okay
+  //
+  //  acceptable.onComplete {
+  //    case Success(result) => println(s"acceptable is $result")
+  //    case Failure(ex) => println("acceptable is " + ex.getMessage)
+  //  }
 
   val acceptable1: Future[Cappuccino] = {
     val groundCoffee = grind("arabica beans")
@@ -90,5 +90,31 @@ object FutureExample extends App {
 
   TimeUnit.SECONDS.sleep(3)
   Await.ready(acceptable1, Duration.Inf)
+
+}
+
+object PromiseExample extends App {
+
+  case class TaxCut(message: String)
+
+  case class LameExcuse(excuse: String) extends RuntimeException(excuse, null, false, false)
+
+  def redeemCampaignPledge(): Future[TaxCut] = {
+    val p = Promise[TaxCut]()
+    Future {
+      println("Starting the new legislative period.")
+      Thread.sleep(2000)
+      p.failure(LameExcuse("global economy crisis"))
+      println("We didn't fulfill our promises, but surely they'll understand.")
+    }
+    p.future
+  }
+
+  redeemCampaignPledge().onComplete({
+    case Success(TaxCut(message)) => println(message)
+    case Failure(ex) => ex.printStackTrace()
+  })
+
+  TimeUnit.SECONDS.sleep(3)
 
 }
