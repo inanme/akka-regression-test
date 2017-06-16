@@ -2,11 +2,10 @@ package com.example
 
 import java.util.concurrent.TimeUnit
 
-import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
-import scala.util.Random
-import scala.util.{Failure, Success}
+import scala.concurrent.{Await, Future, Promise}
+import scala.util.{Failure, Random, Success}
 
 object FutureExample extends App {
   type CoffeeBeans = String
@@ -104,17 +103,22 @@ object PromiseExample extends App {
     Future {
       println("Starting the new legislative period.")
       Thread.sleep(2000)
-      p.failure(LameExcuse("global economy crisis"))
-      println("We didn't fulfill our promises, but surely they'll understand.")
+      if (Random.nextBoolean()) {
+        p.complete(Success(TaxCut("%10")))
+      } else {
+        p.failure(LameExcuse("global economy crisis"))
+        println("We didn't fulfill our promises, but surely they'll understand.")
+      }
     }
     p.future
   }
 
-  redeemCampaignPledge().onComplete({
+  val campaign = redeemCampaignPledge()
+  campaign onComplete {
     case Success(TaxCut(message)) => println(message)
     case Failure(ex) => ex.printStackTrace()
-  })
+  }
 
-  TimeUnit.SECONDS.sleep(3)
+  Await.result(campaign, Duration.Inf)
 
 }

@@ -47,5 +47,4 @@ object PingPongTest extends App {
   val player2 = system.actorOf(Props[PingPong], name = "player2")
   player2.tell(PingMessage, player1)
   Await.ready(system.whenTerminated, Duration.Inf)
-
 }
