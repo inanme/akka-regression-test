@@ -40,5 +40,9 @@ libraryDependencies ++= Seq(
 
   //"org.scalaz" %% "scalaz-core" % scalazVersion,
 
-  "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+  "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+
+  "org.iq80.leveldb" % "leveldb" % "0.7",
+  "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
+
 )
