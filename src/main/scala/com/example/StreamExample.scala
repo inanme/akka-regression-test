@@ -7,7 +7,6 @@ import akka.actor._
 import akka.stream._
 import akka.stream.scaladsl._
 
-import scala.concurrent._
 import scala.concurrent.duration._
 
 object BasicTransformation extends App {
@@ -67,16 +66,28 @@ object MyRunnableGraph extends App {
 
   val g = RunnableGraph.fromGraph(GraphDSL.create() { implicit builder: GraphDSL.Builder[NotUsed] =>
     import GraphDSL.Implicits._
-    val in = Source(1 to 10)
+    val in = Source(1 to 1)
     val out = Sink.foreach(println)
 
     val bcast = builder.add(Broadcast[Int](2))
     val merge = builder.add(Merge[Int](2))
 
-    val f1, f2, f3, f4 = Flow[Int].map(_ + 10)
+    def mkFlow(s: String) = {
+      Flow[Int].map({ i =>
+        println(s + " " + i)
+        i + 10
+      })
+    }
 
+    val f1 = mkFlow("f1")
+    val f2 = mkFlow("f2")
+    val f3 = mkFlow("f3")
+    val f4 = mkFlow("f4")
+
+    //@formatter:off
     in ~> f1 ~> bcast ~> f2 ~> merge ~> f3 ~> out
-    bcast ~> f4 ~> merge
+                bcast ~> f4 ~> merge
+    //@formatter:on
     ClosedShape
   }).run()
 }
