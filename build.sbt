@@ -2,9 +2,9 @@ name := """makka"""
 
 version := "1.0"
 
-scalaVersion := "2.12.1"
+scalaVersion := "2.12.2"
 
-val akkaVersion = "2.4.17"
+val akkaVersion = "2.5.3"
 
 val akkaHttpVersion = "10.0.5"
 
@@ -29,9 +29,11 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-stream-kafka" % "0.16",
   "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion,
   "com.typesafe.akka" %% "akka-testkit" % akkaVersion,
-  "com.typesafe.akka" %% "akka-distributed-data-experimental" % akkaVersion,
-  "com.typesafe.akka" %% "akka-typed-experimental" % akkaVersion,
-  "com.typesafe.akka" %% "akka-persistence-query-experimental" % akkaVersion,
+  "com.typesafe.akka" %% "akka-typed" % akkaVersion,
+  "com.typesafe.akka" %% "akka-typed-testkit" % akkaVersion,
+
+  "com.typesafe.akka" %% "akka-distributed-data" % akkaVersion,
+  "com.typesafe.akka" %% "akka-persistence-query" % akkaVersion,
 
   "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
   "com.typesafe.akka" %% "akka-http-core" % akkaHttpVersion,

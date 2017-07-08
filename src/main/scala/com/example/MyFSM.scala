@@ -9,23 +9,16 @@ import scala.concurrent.duration._
 object MyFSM {
 
   final case class SetTarget(ref: ActorRef)
-
   final case class Queue(obj: Any)
-
   case object Flush
-
   final case class Batch(obj: Seq[Any])
 
   sealed trait State
-
   case object Idle extends State
-
   case object Active extends State
 
   sealed trait Data
-
   case object Uninitialized extends Data
-
   final case class Todo(target: ActorRef, queue: Seq[Any]) extends Data
 
   def props = Props(new MyFSM)
