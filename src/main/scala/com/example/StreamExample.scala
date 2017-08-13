@@ -1,42 +1,34 @@
 package com.example
 
-import java.util.concurrent._
+import java.nio.file.Paths
+import java.util.concurrent.TimeUnit
 
 import akka._
 import akka.actor._
 import akka.stream._
 import akka.stream.scaladsl._
+import akka.util.ByteString
 
+import scala.concurrent._
 import scala.concurrent.duration._
 
-object BasicTransformation extends App {
+trait Resources {
   implicit val system = ActorSystem()
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
-  val text =
-    """|Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-       |Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
-       |when an unknown printer took a galley of type and scrambled it to make a type
-       |specimen book.""".stripMargin
+}
 
+object BasicTransformation extends App with Resources {
+  val text = "Lorem Ipsum is"
   Source.fromIterator(() => text.split("\\s").iterator)
     .map(_.toUpperCase)
     .runForeach(println)
     .onComplete(_ => system.terminate())
-
-  // could also use .runWith(Sink.foreach(println)) instead of .runForeach(println) above
-  // as it is a shorthand for the same thing. Sinks may be constructed elsewhere and plugged
-  // in like this. Note also that foreach returns a future (in either form) which may be
-  // used to attach lifecycle events to, like here with the onComplete.
 }
 
-object Tick extends App {
-  implicit val system = ActorSystem()
-  implicit val executor = system.dispatcher
-  implicit val materializer = ActorMaterializer()
-
+object Tick extends App with Resources {
   val in = Source.tick(1.second, 1.second, 1).limit(10)
-  val in1 = Source.fromIterator(() => Iterator.iterate(0)(_ + 1).take(10000))
+  val in1 = Source.fromIterator(() => Iterator.iterate(0)(_ + 1).take(1000))
 
   def delayReturn[T]: T => T = t => {
     TimeUnit.MILLISECONDS.sleep(100)
@@ -44,38 +36,35 @@ object Tick extends App {
   }
 
   val double = Flow[Int].map(_ * 2)
-  val str = Flow[Int].map[String](_.toString + " as str")
   val sum = Flow[Int].fold(0)(_ + _)
   val sumV = Flow[Seq[Int]].fold[Int](0)((v, i) => delayReturn(i.sum + v))
-  val group = Flow[Int].grouped(2)
   val buffer = Flow[Int].buffer(1000, OverflowStrategy.dropNew) // back-pressures the source if the buffer is full
 
   val out = Sink.foreach(println)
   val out1 = Sink.fold[Int, Int](0)(_ + _)
   val out2 = Sink.ignore
 
-  in1.via(double).via(group).via(sumV).via(buffer).runWith(out).onComplete(_ => system.terminate())
+  in1.grouped(5).via(sumV).runWith(out).onComplete(_ => system.terminate())
 }
 
 //http://doc.akka.io/docs/akka/2.4.17/scala/stream/stream-flows-and-basics.html
 //http://doc.akka.io/docs/akka/2.4.17/scala/stream/stream-graphs.html
-object MyRunnableGraph extends App {
-  implicit val system = ActorSystem()
-  implicit val executor = system.dispatcher
-  implicit val materializer = ActorMaterializer()
+object MyRunnableGraph extends App with Resources {
 
   val g = RunnableGraph.fromGraph(GraphDSL.create() { implicit builder: GraphDSL.Builder[NotUsed] =>
     import GraphDSL.Implicits._
     val in = Source(1 to 1)
     val out = Sink.foreach(println)
 
-    val bcast = builder.add(Broadcast[Int](2))
-    val merge = builder.add(Merge[Int](2))
+    val branching = 2
+    val bcast = builder.add(Broadcast[Int](branching))
+    val merge = builder.add(Merge[Int](branching))
 
     def mkFlow(s: String) = {
       Flow[Int].map({ i =>
-        println(s + " " + i)
-        i + 10
+        val result = i + 10
+        println(s + " " + result)
+        result
       })
     }
 
@@ -90,4 +79,53 @@ object MyRunnableGraph extends App {
     //@formatter:on
     ClosedShape
   }).run()
+}
+
+object Tweets extends App with Resources {
+  final case class Author(handle: String)
+  final case class Hashtag(name: String)
+  final case class Tweet(author: Author, timestamp: Long, body: String) {
+    def hashtags: Set[Hashtag] =
+      body.split(" ").collect { case t if t.startsWith("#") => Hashtag(t) }.toSet
+  }
+
+  val akkaTag = Hashtag("#akka")
+
+  val tweets: Source[Tweet, NotUsed] = Source(
+    Tweet(Author("rolandkuhn"), System.currentTimeMillis, "#akka rocks!") ::
+      Tweet(Author("patriknw"), System.currentTimeMillis, "#akka !") ::
+      Tweet(Author("bantonsson"), System.currentTimeMillis, "#akka !") ::
+      Tweet(Author("drewhk"), System.currentTimeMillis, "#akka !") ::
+      Tweet(Author("ktosopl"), System.currentTimeMillis, "#akka on the rocks!") ::
+      Tweet(Author("mmartynas"), System.currentTimeMillis, "wow #akka !") ::
+      Tweet(Author("akkateam"), System.currentTimeMillis, "#akka rocks!") ::
+      Tweet(Author("bananaman"), System.currentTimeMillis, "#bananas rock!") ::
+      Tweet(Author("appleman"), System.currentTimeMillis, "#apples rock!") ::
+      Tweet(Author("drama"), System.currentTimeMillis, "we compared #apples to #oranges!") ::
+      Nil)
+
+  tweets
+    .filterNot(_.hashtags.contains(akkaTag))
+    .mapConcat(_.hashtags)
+    .map(_.name.toUpperCase)
+    .runWith(Sink.foreach(println))
+    .onComplete( _ => system.terminate())
+}
+
+object Kros extends App with Resources{
+  //in, out,mat
+  val so: Source[Int, NotUsed] = Source(1 to 10)
+  val fb: Flow[String, ByteString, NotUsed] = Flow[String].map(s => ByteString(s + "\n"))
+  val fi: Flow[Int, Int, NotUsed] = Flow[Int].map(_ +1)
+  val s: Sink[ByteString, Future[IOResult]] = FileIO.toPath(Paths.get("X.confx"))
+  //in, mat
+  val x0: Sink[String, NotUsed] = fb.to(s) //to=toMat(sink)(Keep.left)
+  val x1: Sink[String, NotUsed] = fb.toMat(s)(Keep.left)
+  val x2: Sink[String, Future[IOResult]] = fb.toMat(s)(Keep.right)
+  val x3: Sink[String, (NotUsed, Future[IOResult])] = fb.toMat(s)(Keep.both)
+  val fs = so.map(_ +1).map(_.toString).runWith(x2).onComplete(_ => system.terminate()) //toMat(sink)(Keep.right).run()
+  val fx = so.via(fi).to(Sink.ignore) //via=viaMat(flow)(Keep.left)
+
+  val source: Source[Int, Promise[Option[Int]]] = Source.maybe[Int]
+
 }

@@ -16,13 +16,9 @@ object FutureExample extends App {
   type Cappuccino = String
 
   case class Water(temperature: Int) extends AnyVal
-
   case class GrindingException(msg: String) extends Exception(msg)
-
   case class FrothingException(msg: String) extends Exception(msg)
-
   case class WaterBoilingException(msg: String) extends Exception(msg)
-
   case class BrewingException(msg: String) extends Exception(msg)
 
   def grind(beans: CoffeeBeans): Future[GroundCoffee] = Future {
@@ -93,9 +89,7 @@ object FutureExample extends App {
 }
 
 object PromiseExample extends App {
-
   case class TaxCut(message: String)
-
   case class LameExcuse(excuse: String) extends RuntimeException(excuse, null, false, false)
 
   def redeemCampaignPledge(): Future[TaxCut] = {
@@ -120,5 +114,4 @@ object PromiseExample extends App {
   }
 
   Await.result(campaign, Duration.Inf)
-
 }

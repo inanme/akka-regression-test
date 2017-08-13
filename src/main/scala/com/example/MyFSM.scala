@@ -7,7 +7,6 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 object MyFSM {
-
   final case class SetTarget(ref: ActorRef)
   final case class Queue(obj: Any)
   case object Flush
@@ -70,7 +69,7 @@ object MyFSMPrinter {
 
 class MyFSMPrinter extends Actor with ActorLogging {
   override def receive: Receive = LoggingReceive {
-    case it =>
+    case it ⇒
       log.info(it.toString)
   }
 }

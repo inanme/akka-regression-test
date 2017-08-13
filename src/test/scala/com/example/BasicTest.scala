@@ -5,6 +5,7 @@ import akka.testkit.{TestKit, TestProbe}
 import org.scalatest.{Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 class BasicTest extends TestKit(ActorSystem("Doubles-actor")) with WordSpecLike with Matchers {
 

@@ -4,13 +4,14 @@ import akka.actor.ActorSystem
 import akka.kafka.scaladsl.{Consumer, Producer}
 import akka.kafka.{ConsumerSettings, ProducerMessage, ProducerSettings, Subscriptions}
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.{Keep, Sink, Source}
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.{IntegerDeserializer, IntegerSerializer, StringDeserializer, StringSerializer}
 
 import scala.concurrent.Future
+import scala.language.postfixOps
 
 object MyAkkaKafka {
   val bootstrapServers = "localhost:9093"
@@ -26,16 +27,19 @@ object MyAkkaKafka {
   def integerProducerSettings = ProducerSettings(system, new IntegerSerializer, new IntegerSerializer)
     .withBootstrapServers(bootstrapServers)
 
-  val integerConsumerSettings = ConsumerSettings(system, new IntegerDeserializer, new IntegerDeserializer)
-    .withBootstrapServers(bootstrapServers)
-    .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
+  val integerConsumerSettings: ConsumerSettings[Integer, Integer] =
+    ConsumerSettings(system, new IntegerDeserializer, new IntegerDeserializer)
+      .withBootstrapServers(bootstrapServers)
+      .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
 
-  val stringProducerSettings = ProducerSettings(system, new StringSerializer, new StringSerializer)
-    .withBootstrapServers(bootstrapServers)
+  val stringProducerSettings: ProducerSettings[String, String] =
+    ProducerSettings(system, new StringSerializer, new StringSerializer)
+      .withBootstrapServers(bootstrapServers)
 
-  val stringConsumerSettings = ConsumerSettings(system, new StringDeserializer, new StringDeserializer)
-    .withBootstrapServers(bootstrapServers)
-    .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
+  val stringConsumerSettings: ConsumerSettings[String, String] =
+    ConsumerSettings(system, new StringDeserializer, new StringDeserializer)
+      .withBootstrapServers(bootstrapServers)
+      .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
 
 }
 
@@ -50,19 +54,18 @@ object MyAkkaKafkaProducer extends App {
 object MyAkkaKafkaConsumer extends App {
   val consumerSettings = stringConsumerSettings.withGroupId("MyAkkaKafkaConsumer")
   Consumer.committableSource(consumerSettings, Subscriptions.topics(topicName))
-    .mapAsync(3) { msg =>
+    .mapAsync(3) { msg ⇒
       val message = msg.record
       val offset = msg.committableOffset.partitionOffset
       println(message)
       println(offset)
       Future.successful(msg)
     }
-    .mapAsync(3) { msg =>
+    .mapAsync(3) { msg ⇒
       msg.committableOffset.commitScaladsl()
     }
     .runWith(Sink.ignore)
 }
-
 
 object MyAkkaKafkaConsumerExt extends App {
   val consumerSettings = stringConsumerSettings.withGroupId("MyAkkaKafkaConsumerExt")
@@ -71,12 +74,13 @@ object MyAkkaKafkaConsumerExt extends App {
     new TopicPartition(topicName, 0) -> 0L,
     new TopicPartition(topicName, 1) -> 0L,
     new TopicPartition(topicName, 2) -> 0L)
-  Consumer.plainSource(consumerSettings, Subscriptions.assignmentWithOffset(topics))
+  val control: Consumer.Control = Consumer.plainSource(consumerSettings, Subscriptions.assignmentWithOffset(topics))
     .mapAsync(3) { msg =>
       println(msg)
       Future.successful(msg)
     }
-    .runWith(Sink.ignore)
+    .toMat(Sink.ignore)(Keep.left)
+    .run()
 }
 
 object MyAkkaKafkaDoubler extends App {
@@ -85,20 +89,21 @@ object MyAkkaKafkaDoubler extends App {
   val step2 = "step-2"
 
   Source(1 to 6)
-    .map { i => new ProducerRecord[Integer, Integer](step1, i) }
+    .map { i ⇒ new ProducerRecord[Integer, Integer](step1, i) }
     .runWith(Producer.plainSink(integerProducerSettings))
 
   Consumer.committableSource(consumerSettings, Subscriptions.topics(step1))
-    .map { msg =>
+    .map { msg ⇒
       println(s"$step1 -> $step2: $msg")
       ProducerMessage.Message(new ProducerRecord[Integer, Integer](step2, msg.record.value * 3), msg.committableOffset)
     }
     .runWith(Producer.commitableSink(integerProducerSettings))
 
-  Consumer.committableSource(consumerSettings, Subscriptions.topics(step2))
-    .mapAsync(3) { msg =>
+  val control: Consumer.Control = Consumer.committableSource(consumerSettings, Subscriptions.topics(step2))
+    .mapAsync(3) { msg ⇒
       println(msg)
       Future.successful(msg)
     }
-    .runWith(Sink.ignore)
+    .toMat(Sink.ignore)(Keep.left)
+    .run()
 }

@@ -9,8 +9,7 @@ object Doubler {
 
 class Doubler extends Actor with ActorLogging {
   override def receive: Receive = LoggingReceive {
-    case x: Int => {
+    case x: Int ⇒
       sender ! x * 2
-    }
   }
 }

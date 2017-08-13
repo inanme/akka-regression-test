@@ -10,23 +10,15 @@ import scala.concurrent.duration._
 
 object MyPersistentActor {
   def props = Props(new MyPersistentActor)
-
   sealed trait Operation {
     def count: Int
   }
-
   case class Incr(count: Int) extends Operation
-
   case class Decr(count: Int) extends Operation
-
   case class Print(count: Int) extends Operation
-
   case class Cmd(op: Operation)
-
   case class Evt(op: Operation)
-
   case class State(count: Int)
-
 }
 
 class MyPersistentActor extends PersistentActor with ActorLogging {
