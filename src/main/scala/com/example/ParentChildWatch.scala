@@ -26,10 +26,12 @@ class Child extends Actor with ActorLogging {
     super.preStart()
     log.info("I am alive")
   }
+
   override def postRestart(reason: Throwable): Unit = {
     super.postRestart(reason)
     log.error("postRestart : {}", reason.getMessage)
   }
+
   override def receive: Receive = LoggingReceive {
     case NewRequest(x) =>
       log.info(s"new message $x")
@@ -42,16 +44,13 @@ class Child extends Actor with ActorLogging {
       log.error("Unknown message!")
   }
 }
-
 object Parent {
   def props = Props(new Parent)
 }
-
 class Parent extends Actor with ActorLogging {
   var counter = 0
   var curr: ActorRef = _
-  var liveChildren : Set[String] = _
-
+  var liveChildren: Set[String] = _
   override val supervisorStrategy: OneForOneStrategy =
     OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 1 minute) {
       case _: ArithmeticException ⇒ Stop
@@ -80,7 +79,7 @@ class Parent extends Actor with ActorLogging {
       } else {
         setCurr()
       }
-    case m@_ ⇒ log.info("watch out " +m)
+    case m@_ ⇒ log.info("watch out " + m)
   }
 
   def setCurr(): Unit = {
@@ -96,12 +95,9 @@ class Parent extends Actor with ActorLogging {
     receiver = self,
     message = Next)
 }
-
-object ParentChild extends App {
-  val system = ActorSystem("ParentChild")
+object ParentChild extends App with MyResources {
   val parent = system.actorOf(Parent.props, "parent")
   parent ! Start
-
   //  val router = system.actorOf(FromConfig.props(Child.props), "my-random-router")
   //  Range(1, 13).foreach { it =>
   //    router ! RandomRouterMessage(it.toString)

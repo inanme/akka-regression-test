@@ -1,10 +1,10 @@
 package com.example
 
 import java.util.concurrent.TimeUnit
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future, Promise}
+import scala.util.control.NoStackTrace
 import scala.util.{Failure, Random, Success}
 
 object FutureExample extends App {
@@ -14,16 +14,14 @@ object FutureExample extends App {
   type FrothedMilk = String
   type Espresso = String
   type Cappuccino = String
-
   case class Water(temperature: Int) extends AnyVal
-  case class GrindingException(msg: String) extends Exception(msg)
-  case class FrothingException(msg: String) extends Exception(msg)
-  case class WaterBoilingException(msg: String) extends Exception(msg)
-  case class BrewingException(msg: String) extends Exception(msg)
-
+  case class GrindingException(msg: String) extends Exception(msg) with NoStackTrace
+  case class FrothingException(msg: String) extends Exception(msg) with NoStackTrace
+  case class WaterBoilingException(msg: String) extends Exception(msg) with NoStackTrace
+  case class BrewingException(msg: String) extends Exception(msg) with NoStackTrace
   def grind(beans: CoffeeBeans): Future[GroundCoffee] = Future {
     println("start grinding...")
-    Thread.sleep(Random.nextInt(2000))
+    TimeUnit.MILLISECONDS.sleep((Random.nextInt(10) + 5) * 100L)
     if (beans == "baked beans") throw GrindingException("are you joking?")
     println("finished grinding...")
     s"ground coffee of $beans"
@@ -31,21 +29,21 @@ object FutureExample extends App {
 
   def heatWater(water: Water): Future[Water] = Future {
     println("heating the water now")
-    Thread.sleep(Random.nextInt(2000))
+    TimeUnit.MILLISECONDS.sleep((Random.nextInt(10) + 5) * 100L)
     println("hot, it's hot!")
     Water(85)
   }
 
   def frothMilk(milk: Milk): Future[FrothedMilk] = Future {
     println("milk frothing system engaged!")
-    Thread.sleep(Random.nextInt(2000))
+    TimeUnit.MILLISECONDS.sleep((Random.nextInt(10) + 5) * 100L)
     println("shutting down milk frothing system")
     s"frothed $milk"
   }
 
   def brew(coffee: GroundCoffee, heatedWater: Water): Future[Espresso] = Future {
     println("happy brewing :)")
-    Thread.sleep(Random.nextInt(2000))
+    TimeUnit.MILLISECONDS.sleep((Random.nextInt(10) + 5) * 100L)
     println("it's brewed!")
     "espresso"
   }
@@ -56,16 +54,14 @@ object FutureExample extends App {
     water.temperature > 100
   }
 
-  //  val acceptable: Future[Boolean] = for {
-  //    heatedWater <- heatWater(Water(25))
-  //    okay <- temperatureOkay(heatedWater)
-  //  } yield okay
-  //
-  //  acceptable.onComplete {
-  //    case Success(result) => println(s"acceptable is $result")
-  //    case Failure(ex) => println("acceptable is " + ex.getMessage)
-  //  }
-
+  val acceptable: Future[Boolean] = for {
+    heatedWater <- heatWater(Water(25))
+    okay <- temperatureOkay(heatedWater)
+  } yield okay
+  acceptable.onComplete {
+    case Success(result) => println(s"acceptable is $result")
+    case Failure(ex) => println("acceptable is " + ex.getMessage)
+  }
   val acceptable1: Future[Cappuccino] = {
     val groundCoffee = grind("arabica beans")
     val heatedWater = heatWater(Water(20))
@@ -77,21 +73,17 @@ object FutureExample extends App {
       espresso <- brew(ground, water)
     } yield combine(espresso, foam)
   }
-
   grind("baked beans").onComplete {
     case Success(ground) => println(s"got my $ground")
     case Failure(ex) => println("This grinder needs a replacement, seriously! " + ex.getMessage)
   }
-
   TimeUnit.SECONDS.sleep(3)
   Await.ready(acceptable1, Duration.Inf)
 
 }
-
 object PromiseExample extends App {
   case class TaxCut(message: String)
   case class LameExcuse(excuse: String) extends RuntimeException(excuse, null, false, false)
-
   def redeemCampaignPledge(): Future[TaxCut] = {
     val p = Promise[TaxCut]()
     Future {
@@ -112,6 +104,5 @@ object PromiseExample extends App {
     case Success(TaxCut(message)) => println(message)
     case Failure(ex) => ex.printStackTrace()
   }
-
   Await.result(campaign, Duration.Inf)
 }

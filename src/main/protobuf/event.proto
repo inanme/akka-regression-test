@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+// Brought in from scalapb-runtime
+import "scalapb/scalapb.proto";
+import "google/protobuf/wrappers.proto";
+
+package com.example;
+
+message Added {
+    option (scalapb.message).extends = "com.example.event.Event";
+    int32 value = 1;
+}
+
+message Subtracted {
+    option (scalapb.message).extends = "com.example.event.Event";
+    int32 value = 1;
+}
+
+message State {
+    int32 value = 1;
+}

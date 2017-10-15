@@ -7,5 +7,6 @@ object versions {
   val json4sVersion = "3.5.3"
   val monocleVersion = "1.4.0"
   val http4sVersion = "0.17.3"
+  val scalapbVersion = com.trueaccord.scalapb.compiler.Version.scalapbVersion
 }
 

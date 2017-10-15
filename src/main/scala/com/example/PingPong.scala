@@ -1,14 +1,15 @@
 package com.example
 
 import akka.actor._
-
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-case class Ping(cnt: Int)
-case class Pong(cnt: Int)
-case object EndOfGame
-
+object PingPong {
+  case class Ping(cnt: Int)
+  case class Pong(cnt: Int)
+  case object EndOfGame
+}
+import PingPong._
 class PingPong extends Actor {
   def terminate(n: Int) = n > 9
 
@@ -33,9 +34,7 @@ class PingPong extends Actor {
       context.system.terminate()
   }
 }
-
-object PingPongTest extends App {
-  val system = ActorSystem("PingPongSystem")
+object PingPongTest extends App with MyResources {
   val player1 = system.actorOf(Props[PingPong], name = "player1")
   val player2 = system.actorOf(Props[PingPong], name = "player2")
   player2.tell(Ping(0), player1)

@@ -4,6 +4,10 @@ scalaVersion := "2.12.2"
 
 import versions._
 
+PB.targets in Compile := Seq(
+  scalapb.gen() -> (sourceManaged in Compile).value
+)
+
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
   "com.typesafe.akka" %% "akka-agent" % akkaVersion,
@@ -34,6 +38,12 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http-jackson" % akkaHttpVersion,
   "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion,
 
+  "org.json4s" %% "json4s-jackson" % json4sVersion,
+  "org.json4s" %% "json4s-scalaz" % json4sVersion,
+
+  "com.trueaccord.scalapb" %% "scalapb-json4s" % "0.3.3",
+  "com.trueaccord.scalapb" %% "scalapb-runtime" % scalapbVersion % "protobuf",
+
   //"org.scalaz" %% "scalaz-core" % scalazVersion,
 
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
@@ -42,3 +52,8 @@ libraryDependencies ++= Seq(
   "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
 
 )
+
+scalacOptions ++= Seq("-deprecation", "-explaintypes", "-feature", "-unchecked", "-encoding", "utf8",
+  "-language:postfixOps",
+  "-language:higherKinds",
+  "-Ypartial-unification")

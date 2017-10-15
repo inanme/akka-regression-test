@@ -2,7 +2,7 @@ package com.example
 
 import java.io.File
 
-import akka.actor.{Actor, ActorLogging, ActorSystem, PoisonPill, Props}
+import akka.actor._
 import akka.event.LoggingReceive
 import akka.pattern.BackoffSupervisor
 import com.typesafe.config.ConfigFactory
@@ -14,9 +14,8 @@ import scala.io.Source
 import scala.language.postfixOps
 import scala.util.Random
 
-object FileScanner extends App {
+object FileScanner extends App with MyResources {
   val appName = "scanner"
-  val system = ActorSystem.create(appName)
   val config = ConfigFactory.load().getConfig(appName)
 
   //val scanner = system.actorOf(FolderScannerActor.props, "scanner")
