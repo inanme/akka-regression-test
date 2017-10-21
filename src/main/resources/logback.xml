@@ -2,7 +2,7 @@
 
     <property name="defaultPattern1" value="[%date{ISO8601}] MAKKA %-5level [%thread] %logger{36} - %msg%n"/>
 
-    <property name="defaultPattern" value="%logger{36} - %msg%n"/>
+    <property name="defaultPattern" value="%date{HH:mm:ss.SSS}|%-20logger{0}|%msg%n"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->

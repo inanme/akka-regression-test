@@ -11,7 +11,7 @@ trait MyResources {
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 }
 trait MyFailingResources {
-  implicit val system: ActorSystem = ActorSystem("failing", PersistenceConfig("inmemTimingOutJournal").akkaConfig)
+  implicit val system: ActorSystem = ActorSystem("failing", PersistenceConfig("inmemFailOnceJournal").akkaConfig)
   implicit val executor: ExecutionContextExecutor = system.dispatcher
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 }
@@ -56,6 +56,11 @@ case class PersistenceConfig(journalPlugin: String, snapshotPlugin: Option[Strin
        |
        |inmemTimingOutJournal {
        | class = "org.inanme.InmemTimingOutJournal"
+       | plugin-dispatcher = "akka.actor.default-dispatcher"
+       |}
+       |
+       |inmemFailOnceJournal{
+       | class = "org.inanme.InmemFailOnceJournal"
        | plugin-dispatcher = "akka.actor.default-dispatcher"
        |}
        |

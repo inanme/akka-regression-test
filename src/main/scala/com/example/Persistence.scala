@@ -1,10 +1,13 @@
 package com.example
 
 import akka.actor._
+import akka.actor.Actor._
+import akka.pattern._
 import akka.event._
 import akka.persistence._
 import scala.concurrent._
 import scala.concurrent.duration._
+import com.typesafe.scalalogging.Logger
 import java.util.concurrent.TimeUnit
 
 package a38409324 {
@@ -77,22 +80,17 @@ package a38409324 {
 }
 
 package jdfsakl4372804dfsf {
-
-  import akka.pattern.{Backoff, BackoffSupervisor}
-  import com.typesafe.scalalogging.Logger
-
   class MyPersistentActor extends PersistentActor with ActorLogging {
-    override def receiveRecover = Actor.emptyBehavior
+    override def receiveRecover: Receive = emptyBehavior
 
-    override def receiveCommand = {
-      case x: Int ⇒ persist(x)(print)
+    override def receiveCommand: Receive = {
+      case x: Int ⇒ persist(x)(println)
     }
 
     override def persistenceId = "48390fasdfdsa"
   }
   object Persistence extends App with MyFailingResources {
     val logger = Logger[Persistence]
-
     val actor = BackoffSupervisor.props(
       Backoff.onStop(
         Props[MyPersistentActor],
@@ -104,7 +102,7 @@ package jdfsakl4372804dfsf {
     val myActor = system.actorOf(actor, "MyPersistentActor")
     Range(1, 11).foreach { i ⇒
       myActor ! i
-      TimeUnit.MILLISECONDS.sleep(110L)
+      TimeUnit.MILLISECONDS.sleep(210L)
     }
     TimeUnit.SECONDS.sleep(10L)
     Await.result(system.terminate(), Duration.Inf)

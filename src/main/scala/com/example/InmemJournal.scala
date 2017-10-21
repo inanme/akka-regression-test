@@ -9,22 +9,6 @@ import akka.persistence.journal.AsyncWriteJournal
 import akka.persistence.PersistentRepr
 import akka.persistence.AtomicWrite
 
-/*
-
-akka {
-  persistence {
-    journal.plugin = "pg-journal"
-  }
-}
-
-pg-journal {
-  # class name of the jdbc journal plugin
-  class = "org.inanme.InmemTimingOutJournal"
-  plugin-dispatcher = "akka.actor.default-dispatcher"
-}
-
- */
-
 abstract class JournalBase extends AsyncWriteJournal {
   override def asyncReadHighestSequenceNr(persistenceId: String, fromSequenceNr: Long): Future[Long] = Future.successful(1L)
 
