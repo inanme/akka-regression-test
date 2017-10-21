@@ -1,6 +1,7 @@
 package com.example
 
 import akka.actor._
+
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
@@ -9,8 +10,11 @@ object PingPong {
   case class Pong(cnt: Int)
   case object EndOfGame
 }
+
 import PingPong._
+
 class PingPong extends Actor {
+  import context.dispatcher
   def terminate(n: Int) = n > 9
 
   def receive = {
@@ -31,7 +35,7 @@ class PingPong extends Actor {
         sender ! Ping(counter + 1)
       }
     case EndOfGame =>
-      context.system.terminate()
+      context.system.terminate().onComplete(printTry)
   }
 }
 object PingPongTest extends App with MyResources {

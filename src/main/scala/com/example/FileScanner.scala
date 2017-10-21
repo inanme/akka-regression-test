@@ -1,12 +1,10 @@
 package com.example
 
 import java.io.File
-
 import akka.actor._
 import akka.event.LoggingReceive
 import akka.pattern.BackoffSupervisor
 import com.typesafe.config.ConfigFactory
-
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -17,7 +15,6 @@ import scala.util.Random
 object FileScanner extends App with MyResources {
   val appName = "scanner"
   val config = ConfigFactory.load().getConfig(appName)
-
   //val scanner = system.actorOf(FolderScannerActor.props, "scanner")
   val supervisor = BackoffSupervisor.props(
     FolderScannerActor.props,
@@ -28,18 +25,13 @@ object FileScanner extends App with MyResources {
 
   val scanner = system.actorOf(supervisor, name = "scanner")
   val directoryPath: String = getClass.getResource(config.getString("file-reader.directoryPath")).getPath
-
   scanner ! new File(directoryPath)
-
   Await.ready(system.whenTerminated, Duration.Inf)
 }
-
 case object DoneWriting
-
 object FileWriterActor {
   def props = Props(new FileWriterActor)
 }
-
 class FileWriterActor extends Actor with ActorLogging {
   def receive = LoggingReceive {
     case words: List[_] ⇒
@@ -48,11 +40,9 @@ class FileWriterActor extends Actor with ActorLogging {
       self ! PoisonPill
   }
 }
-
 object FileReaderActor {
   def props = Props(new FileReaderActor)
 }
-
 class FileReaderActor extends Actor with ActorLogging {
   val random = new Random()
 
@@ -63,17 +53,19 @@ class FileReaderActor extends Actor with ActorLogging {
         sender() ! Source.fromFile(f).getLines().toList
         self ! PoisonPill
       } else {
-        val x = 1 / 0
+        val zero = 1 - 1
+        println(1 / (1 - zero))
       }
     case _ ⇒ log.info("Still waiting for a text file")
   }
 }
-
 object FolderScannerActor {
   def props = Props(new FolderScannerActor)
 }
-
 class FolderScannerActor extends Actor with ActorLogging {
+
+  import context.dispatcher
+
   var filesNumber = 0
   var responsesNumber = 0
   var words = new ListBuffer[String]
@@ -101,7 +93,7 @@ class FolderScannerActor extends Actor with ActorLogging {
       }
     case DoneWriting ⇒
       log.info("shutting down")
-      context.system.terminate()
+      context.system.terminate().onComplete(printTry)
     case _ => log.info("Nothing to scan...")
   }
 }

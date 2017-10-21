@@ -35,7 +35,8 @@ class Child extends Actor with ActorLogging {
   override def receive: Receive = LoggingReceive {
     case NewRequest(x) =>
       log.info(s"new message $x")
-      1 / 0
+      val zero = 1 - 1
+      println(1 / (1 - zero))
     //      log.info("bye")
     //      self ! PoisonPill
     case Message(message) =>
@@ -48,6 +49,7 @@ object Parent {
   def props = Props(new Parent)
 }
 class Parent extends Actor with ActorLogging {
+  import context.dispatcher
   var counter = 0
   var curr: ActorRef = _
   var liveChildren: Set[String] = _
@@ -75,7 +77,7 @@ class Parent extends Actor with ActorLogging {
       curr ! PoisonPill
       liveChildren -= actor.path.toString
       if (liveChildren.isEmpty) {
-        context.system.terminate()
+        context.system.terminate().onComplete(printTry)
       } else {
         setCurr()
       }

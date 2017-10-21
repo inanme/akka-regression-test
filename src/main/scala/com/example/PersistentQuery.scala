@@ -17,16 +17,16 @@ package pr354890 {
       .eventsByPersistenceId("101")
     // Grab a list of all the persistenceIds as of this moment
     val events = queries
-      .map(eventEnvelope => eventEnvelope.event)
-      .take(10)
-      .map({
-        case Added(value) => s"Added $value"
-        case Subtracted(value) => s"Subtracted $value"
+      .take(30)
+      .map(_.event)
+      .map {
+        case Added(value) ⇒ s"Added $value"
+        case Subtracted(value) ⇒ s"Subtracted $value"
         case State(value) ⇒ s"State $value"
-      })
+      }
     val matValue: Future[Done] = events.runWith(Sink.foreach(println))
     matValue.onComplete {
-      case Success(done) =>
+      case Success(_) =>
         Console println "Query completed successfully"
         system terminate()
 
@@ -38,7 +38,7 @@ package pr354890 {
   object Main2 extends App with MyResources {
     val queries = PersistenceQuery(system).readJournalFor[LeveldbReadJournal](LeveldbReadJournal.Identifier)
     val nonInvasiveLog = (x: String) => {
-      println(x)
+      println(s"currentPersistenceId : $x")
       x
     }
     // Grab a list of all the persistenceIds as of this moment
@@ -52,14 +52,9 @@ package pr354890 {
         case Subtracted(value) => s"Subtracted $value"
       })
     val matValue: Future[Done] = events.runWith(Sink.foreach(println))
-    matValue.onComplete {
-      case Success(done) =>
-        Console println "Query completed successfully"
-        system terminate()
-
-      case Failure(e) =>
-        Console println e
-        system terminate()
+    matValue.onComplete { it ⇒
+      println(s"result $it")
+      system.terminate()
     }
   }
 }

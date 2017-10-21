@@ -28,7 +28,7 @@ object FutureExample extends App {
   }
 
   def heatWater(water: Water): Future[Water] = Future {
-    println("heating the water now")
+    println(s"heating the $water now")
     TimeUnit.MILLISECONDS.sleep((Random.nextInt(10) + 5) * 100L)
     println("hot, it's hot!")
     Water(85)
@@ -42,13 +42,16 @@ object FutureExample extends App {
   }
 
   def brew(coffee: GroundCoffee, heatedWater: Water): Future[Espresso] = Future {
-    println("happy brewing :)")
+    println(s"happy $coffee brewing with $heatedWater :)")
     TimeUnit.MILLISECONDS.sleep((Random.nextInt(10) + 5) * 100L)
     println("it's brewed!")
     "espresso"
   }
 
-  def combine(espresso: Espresso, frothedMilk: FrothedMilk): Cappuccino = "cappuccino"
+  def combine(espresso: Espresso, frothedMilk: FrothedMilk): Cappuccino = {
+    println(s"combine $espresso with $frothedMilk")
+    "cappuccino"
+  }
 
   def temperatureOkay(water: Water): Future[Boolean] = Future {
     water.temperature > 100

@@ -48,7 +48,8 @@ package p394034i {
 
 package bf3i29043 {
   case class Message(x: Int)
-  class BufferingActor(printer: ActorRef) extends Actor with ActorLogging with Stash {
+  class BufferingActor extends Actor with ActorLogging with Stash {
+    import context.dispatcher
     val limit = 10
     var counter = 0
 
@@ -70,7 +71,7 @@ package bf3i29043 {
 
     def send: Receive = LoggingReceive {
       case Done ⇒
-        context.system.terminate()
+        context.system.terminate().onComplete(printTry)
       case x@_ ⇒
         log.info(s"send : what is this $x")
     }
@@ -80,10 +81,9 @@ package bf3i29043 {
   }
   object Main extends App with MyResources {
     val bufferingActor = system.actorOf(Props(new Printer))
-    val actorRef = system.actorOf(Props(new BufferingActor(bufferingActor)))
+    val actorRef = system.actorOf(Props[BufferingActor])
     val sink = Sink.actorRef(actorRef, Done)
     val stream = Source(1 to 10).map(Message).throttle(1, 1 second, 1, ThrottleMode.Shaping).runWith(sink)
     Await.ready(system.whenTerminated, Duration.Inf)
-
   }
 }

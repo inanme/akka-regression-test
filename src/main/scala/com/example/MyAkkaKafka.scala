@@ -8,7 +8,6 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.{IntegerDeserializer, IntegerSerializer, StringDeserializer, StringSerializer}
 import scala.concurrent.Future
-import scala.language.postfixOps
 
 object MyAkkaKafka extends MyResources {
   val bootstrapServers = "localhost:9093"
