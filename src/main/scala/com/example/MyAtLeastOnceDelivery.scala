@@ -4,22 +4,24 @@ import akka._
 import akka.actor._
 import akka.persistence.AtLeastOnceDelivery._
 import akka.persistence._
-import akka.stream.scaladsl._
 import scala.collection.JavaConverters._
 import scala.concurrent._
 import scala.concurrent.duration._
 
 package r43ejdsmkl {
+  //import java.util.concurrent.TimeUnit
+
   case object MyInit
   case object MyAck
   @SerialVersionUID(1L)
   case class Print(deliveryId: Long, message: String)
   case class OK(deliveryId: Long)
   case object Snapshot
-  object MyAtLeastOnceDelivery extends App with MyResources {
-    val printer = system.actorOf(Props[GoodPrinter])
-    val props = Props(new MyAtLeastOnceDelivery(printer))
+  object MyAtLeastOnceDelivery extends App with MyInmemResources {
+    val props = Props(new MyAtLeastOnceDelivery(system.actorOf(Props[BadPrinter])))
     val myActor = system.actorOf(props)
+
+    import akka.stream.scaladsl._
     Source(1 to 10)
       .map(it ⇒ "message" + it)
       .runWith(
@@ -29,10 +31,11 @@ package r43ejdsmkl {
           ackMessage = MyAck,
           onCompleteMessage = Done
         ))
-    //    (1 to 10).foreach(it ⇒ {
-    //      myActor ! "message" + it
-    //      TimeUnit.SECONDS.sleep(2L)
-    //    })
+
+//    (1 to 10).foreach(it ⇒ {
+//      myActor ! "message" + it
+//      //TimeUnit.SECONDS.sleep(2L)
+//    })
     Await.result(system.whenTerminated, Duration.Inf)
   }
   class GoodPrinter extends Actor with ActorLogging {
@@ -86,7 +89,7 @@ package r43ejdsmkl {
       case it ⇒ log.info(s"<<receiveRecover>> : $it")
     }
 
-    var upstream: ActorRef = _
+    var upstream: ActorRef = context.actorOf(Props.empty)
 
     override def receiveCommand: Receive = {
       case Done ⇒ context.system.terminate().onComplete(printTry)

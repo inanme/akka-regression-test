@@ -5,10 +5,8 @@ import akka.pattern.ask
 import akka.testkit.TestKit
 import akka.util.Timeout
 import org.scalatest.{Matchers, WordSpecLike}
-
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.language.postfixOps
 
 class BasicFutureTest extends TestKit(ActorSystem("Doubles-actor")) with WordSpecLike with Matchers {
   implicit val timeout: Timeout = 100 milliseconds

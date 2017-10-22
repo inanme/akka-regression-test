@@ -2,9 +2,7 @@ package com.example
 
 import akka.actor._
 import akka.testkit._
-import org.scalatest.WordSpecLike
-import org.scalatest.Matchers
-import org.scalatest.BeforeAndAfterAll
+import org.scalatest._
 
 class EmptyTest extends TestKit(ActorSystem("MySpec"))
   with ImplicitSender
@@ -16,6 +14,14 @@ class EmptyTest extends TestKit(ActorSystem("MySpec"))
 
   override def afterAll() = {
     system.terminate().onComplete(printTry)
+  }
+
+  "sample test" in {
+    val echo = system.actorOf(Props[Echo])
+    echo ! 123
+    echo ! "mert"
+    expectMsg(123)
+    expectMsg("mert")
   }
 
 }
