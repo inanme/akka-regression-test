@@ -1,6 +1,6 @@
 name := """makka"""
 version := "1.0"
-scalaVersion := "2.12.2"
+scalaVersion := "2.12.4"
 
 import versions._
 
@@ -39,7 +39,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion,
 
   "org.json4s" %% "json4s-jackson" % json4sVersion,
-  "org.json4s" %% "json4s-scalaz" % json4sVersion,
 
   "com.trueaccord.scalapb" %% "scalapb-json4s" % "0.3.3",
   "com.trueaccord.scalapb" %% "scalapb-runtime" % scalapbVersion % "protobuf",
@@ -47,7 +46,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
 
-//"org.scalaz" %% "scalaz-core" % scalazVersion,
+  "org.typelevel" %% "cats-core" % "1.0.1",
 
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
 
