@@ -3,21 +3,30 @@ package com.example
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
-import scala.io.StdIn
+import akka.stream.scaladsl.Flow
 
-//http://doc.akka.io/docs/akka-http/10.0.5/scala/http/introduction.html#using-akka-http
-object WebServer extends App with MyResources {
-  val route =
-    path("hello") {
-      get {
-        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
+package fjdksla349 {
+  object Handler2 extends App with MyResources {
+    val handler: HttpRequest ⇒ HttpResponse = _ ⇒ HttpResponse(status = StatusCodes.BadRequest)
+    Http().bindAndHandle(Flow.fromFunction(handler), "localhost", 8080)
+  }
+  object Route132 extends App with MyResources {
+    val route =
+      path("hello" / Segment) { name ⇒
+        get {
+          complete(s"hello $name")
+        }
       }
-    }
-  val bindingFuture = Http().bindAndHandle(route, "localhost", 8080)
-  println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
-  StdIn.readLine() // let it run until user presses return
-  bindingFuture
-    .flatMap(_.unbind()) // trigger unbinding from the port
-    .onComplete(_ => system.terminate()) // and shutdown when done
+    Http().bindAndHandle(route, "localhost", 8080)
+  }
+  object Route13 extends App with MyResources {
+    val route =
+      path("hello" / Segment) { name ⇒
+        get {
+          complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
+        }
+      }
+    Http().bindAndHandle(route, "localhost", 8080)
 
+  }
 }

@@ -3,7 +3,7 @@ package com.example
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.typesafe.config.{Config, ConfigFactory}
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{Await, ExecutionContextExecutor}
 import scala.concurrent.duration.Duration
 import scala.concurrent.duration._
 
@@ -11,6 +11,10 @@ trait MyResources {
   implicit val system: ActorSystem = ActorSystem()
   implicit val executor: ExecutionContextExecutor = system.dispatcher
   implicit val materializer: ActorMaterializer = ActorMaterializer()
+  def terminate() = {
+    materializer.shutdown()
+    Await.ready(system.terminate(), 3 seconds)
+  }
 }
 trait MyRemoteResources1 {
   implicit val system: ActorSystem = ActorSystem("remote1", ConfigFactory.load().getConfig("remote1"))
