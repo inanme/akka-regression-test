@@ -1,11 +1,10 @@
 package com.example
 
-import java.util.concurrent.TimeUnit
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future, Promise}
+import scala.concurrent.duration._
+import scala.concurrent.{ Await, Future, Promise }
 import scala.util.control.NoStackTrace
-import scala.util.{Failure, Random, Success}
+import scala.util.{ Failure, Random, Success }
 
 object FutureExample extends App {
   type CoffeeBeans = String
@@ -21,7 +20,7 @@ object FutureExample extends App {
   case class BrewingException(msg: String) extends Exception(msg) with NoStackTrace
   def grind(beans: CoffeeBeans): Future[GroundCoffee] = Future {
     println("start grinding...")
-    TimeUnit.MILLISECONDS.sleep((Random.nextInt(10) + 5) * 100L)
+    sleep(((Random.nextInt(10) + 5) * 100L).millis)
     if (beans == "baked beans") throw GrindingException("are you joking?")
     println("finished grinding...")
     s"ground coffee of $beans"
@@ -29,21 +28,21 @@ object FutureExample extends App {
 
   def heatWater(water: Water): Future[Water] = Future {
     println(s"heating the $water now")
-    TimeUnit.MILLISECONDS.sleep((Random.nextInt(10) + 5) * 100L)
+    sleep(((Random.nextInt(10) + 5) * 100L).millis)
     println("hot, it's hot!")
     Water(85)
   }
 
   def frothMilk(milk: Milk): Future[FrothedMilk] = Future {
     println("milk frothing system engaged!")
-    TimeUnit.MILLISECONDS.sleep((Random.nextInt(10) + 5) * 100L)
+    sleep(((Random.nextInt(10) + 5) * 100L).millis)
     println("shutting down milk frothing system")
     s"frothed $milk"
   }
 
   def brew(coffee: GroundCoffee, heatedWater: Water): Future[Espresso] = Future {
     println(s"happy $coffee brewing with $heatedWater :)")
-    TimeUnit.MILLISECONDS.sleep((Random.nextInt(10) + 5) * 100L)
+    sleep(((Random.nextInt(10) + 5) * 100L).millis)
     println("it's brewed!")
     "espresso"
   }
@@ -80,7 +79,7 @@ object FutureExample extends App {
     case Success(ground) => println(s"got my $ground")
     case Failure(ex) => println("This grinder needs a replacement, seriously! " + ex.getMessage)
   }
-  TimeUnit.SECONDS.sleep(3)
+  sleep(3 seconds)
   Await.ready(acceptable1, Duration.Inf)
 
 }

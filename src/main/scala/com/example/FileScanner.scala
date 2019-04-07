@@ -1,15 +1,16 @@
 package com.example
 
 import java.io.File
+
 import akka.actor._
 import akka.event.LoggingReceive
-import akka.pattern.BackoffSupervisor
+import akka.pattern.{ BackoffOpts, BackoffSupervisor }
 import com.typesafe.config.ConfigFactory
+
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.io.Source
-import scala.language.postfixOps
 import scala.util.Random
 
 object FileScanner extends App with MyResources {
@@ -17,21 +18,25 @@ object FileScanner extends App with MyResources {
   val config = ConfigFactory.load().getConfig(appName)
   //val scanner = system.actorOf(FolderScannerActor.props, "scanner")
   val supervisor = BackoffSupervisor.props(
-    FolderScannerActor.props,
-    childName = "myEcho",
-    minBackoff = 1 seconds,
-    maxBackoff = 3 seconds,
-    randomFactor = 0.2) // adds 20% "noise" to vary the intervals slightly
+    BackoffOpts.onStop(
+      FolderScannerActor.props,
+      childName = "myEcho",
+      minBackoff = 1 seconds,
+      maxBackoff = 3 seconds,
+      randomFactor = 0.2)) // adds 20% "noise" to vary the intervals slightly
 
   val scanner = system.actorOf(supervisor, name = "scanner")
   val directoryPath: String = getClass.getResource(config.getString("file-reader.directoryPath")).getPath
   scanner ! new File(directoryPath)
   Await.ready(system.whenTerminated, Duration.Inf)
 }
+
 case object DoneWriting
+
 object FileWriterActor {
   def props = Props(new FileWriterActor)
 }
+
 class FileWriterActor extends Actor with ActorLogging {
   def receive = LoggingReceive {
     case words: List[_] ⇒
@@ -40,9 +45,11 @@ class FileWriterActor extends Actor with ActorLogging {
       self ! PoisonPill
   }
 }
+
 object FileReaderActor {
   def props = Props(new FileReaderActor)
 }
+
 class FileReaderActor extends Actor with ActorLogging {
   val random = new Random()
 
@@ -59,9 +66,11 @@ class FileReaderActor extends Actor with ActorLogging {
     case _ ⇒ log.info("Still waiting for a text file")
   }
 }
+
 object FolderScannerActor {
   def props = Props(new FolderScannerActor)
 }
+
 class FolderScannerActor extends Actor with ActorLogging {
 
   import context.dispatcher
@@ -84,10 +93,10 @@ class FolderScannerActor extends Actor with ActorLogging {
       val files = listFiles(folder)
       filesNumber = files.size
       files.foreach(file => context.actorOf(FileReaderActor.props) ! file)
-    case wordsList: List[String@unchecked] ⇒
+    case wordsList: List[String @unchecked] ⇒
       log.info(s"New words are received $wordsList")
       responsesNumber += 1
-      words insertAll(words.size, wordsList)
+      words insertAll (words.size, wordsList)
       if (filesNumber == responsesNumber) {
         context.actorOf(FileWriterActor.props) ! words.toList
       }

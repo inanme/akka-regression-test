@@ -1,11 +1,10 @@
 package com.example
 
 import akka.actor.ActorSystem
-import akka.testkit.{TestKit, TestProbe}
-import org.scalatest.{Matchers, WordSpecLike}
+import akka.testkit.{ TestKit, TestProbe }
+import org.scalatest.{ Matchers, WordSpecLike }
 
 import scala.concurrent.duration._
-import scala.language.postfixOps
 
 class BasicTest extends TestKit(ActorSystem("Doubles-actor")) with WordSpecLike with Matchers {
 

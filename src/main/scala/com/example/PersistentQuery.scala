@@ -28,11 +28,11 @@ package pr354890 {
     matValue.onComplete {
       case Success(_) =>
         Console println "Query completed successfully"
-        system terminate()
+        system terminate ()
 
       case Failure(e) =>
         Console println e
-        system terminate()
+        system terminate ()
     }
   }
   object Main2 extends App with MyResources {

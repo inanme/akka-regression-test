@@ -1,7 +1,6 @@
 package com.example
 
 import java.nio.file.Paths
-import java.util.concurrent.TimeUnit
 import akka._
 import akka.stream._
 import akka.stream.scaladsl._
@@ -21,7 +20,7 @@ object Tick extends App with MyResources {
   val in1 = Source.fromIterator(() => Iterator.iterate(0)(_ + 1).take(1000))
 
   def delayReturn[T]: T => T = t => {
-    TimeUnit.MILLISECONDS.sleep(100)
+    sleep(100 millis)
     t
   }
 

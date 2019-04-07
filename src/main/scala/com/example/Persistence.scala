@@ -8,9 +8,9 @@ import akka.persistence._
 import scala.concurrent._
 import scala.concurrent.duration._
 import com.typesafe.scalalogging.Logger
-import java.util.concurrent.TimeUnit
 
 package a38409324 {
+
   object MyPersistentActor {
     def props = Props(new MyPersistentActor)
   }
@@ -68,18 +68,21 @@ package a38409324 {
     }
 
   }
+
   object Persistence extends App with MyResources {
     val myActor = system.actorOf(MyPersistentActor.props, "MyPersistentActor")
     Range(1, 11).foreach { i ⇒
       myActor ! Add(i)
     }
     myActor ! Print
-    TimeUnit.SECONDS.sleep(3L)
+    sleep(3L seconds)
     Await.result(system.terminate(), Duration.Inf)
   }
+
 }
 
 package jdfsakl4372804dfsf {
+
   class MyPersistentActor extends PersistentActor with ActorLogging {
     override def receiveRecover: Receive = emptyBehavior
 
@@ -89,22 +92,31 @@ package jdfsakl4372804dfsf {
 
     override def persistenceId = "48390fasdfdsa"
   }
+
+  object MyPersistentActor {
+    def props: Props = Props {
+      println("new actor")
+      new MyPersistentActor
+    }
+  }
+
   object Persistence extends App with MyFailingResources {
     val logger = Logger[Persistence]
     val actor = BackoffSupervisor.props(
-      Backoff.onStop(
-        Props[MyPersistentActor],
+      BackoffOpts.onStop(
+        MyPersistentActor.props,
         childName = "MyPersistentActor",
-        minBackoff = 100 millis,
-        maxBackoff = 100 millis,
+        minBackoff = 1000 millis,
+        maxBackoff = 10000 millis,
         randomFactor = 0.2 // adds 20% "noise" to vary the intervals slightly
       ))
     val myActor = system.actorOf(actor, "MyPersistentActor")
     Range(1, 11).foreach { i ⇒
       myActor ! i
-      TimeUnit.MILLISECONDS.sleep(210L)
+      sleep(210 millis)
     }
-    TimeUnit.SECONDS.sleep(10L)
+    sleep(30 seconds)
     Await.result(system.terminate(), Duration.Inf)
   }
+
 }

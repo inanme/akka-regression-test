@@ -27,7 +27,7 @@ package p3849jfdksl {
     when(Idle) {
       case Event(SetTarget(ref), Uninitialized) =>
         stay using Todo(ref, Vector.empty)
-      case Event(Queue(obj), t@Todo(_, v)) =>
+      case Event(Queue(obj), t @ Todo(_, v)) =>
         goto(Active) using t.copy(queue = v :+ obj)
     }
     onTransition {
@@ -40,9 +40,9 @@ package p3849jfdksl {
         }
     }
     when(Active, stateTimeout = 5 seconds) {
-      case Event(Queue(obj), t@Todo(_, v)) =>
+      case Event(Queue(obj), t @ Todo(_, v)) =>
         goto(Active) using t.copy(queue = v :+ obj)
-      case Event(e@(Flush | StateTimeout), t: Todo) =>
+      case Event(e @ (Flush | StateTimeout), t: Todo) =>
         log.info(e.toString)
         goto(Idle) using t.copy(queue = Vector.empty)
     }

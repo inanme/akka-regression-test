@@ -7,7 +7,6 @@ import akka.routing.RandomGroup
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.language.postfixOps
 
 object Messages {
   case object Start
@@ -81,7 +80,7 @@ class Parent extends Actor with ActorLogging {
       } else {
         setCurr()
       }
-    case m@_ ⇒ log.info("watch out " + m)
+    case m @ _ ⇒ log.info("watch out " + m)
   }
 
   def setCurr(): Unit = {

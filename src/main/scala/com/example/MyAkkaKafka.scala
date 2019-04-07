@@ -1,12 +1,12 @@
 package com.example
 
-import akka.kafka.scaladsl.{Consumer, Producer}
-import akka.kafka.{ConsumerSettings, ProducerMessage, ProducerSettings, Subscriptions}
-import akka.stream.scaladsl.{Keep, Sink, Source}
+import akka.kafka.scaladsl.{ Consumer, Producer }
+import akka.kafka.{ ConsumerSettings, ProducerMessage, ProducerSettings, Subscriptions }
+import akka.stream.scaladsl.{ Keep, Sink, Source }
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.TopicPartition
-import org.apache.kafka.common.serialization.{IntegerDeserializer, IntegerSerializer, StringDeserializer, StringSerializer}
+import org.apache.kafka.common.serialization.{ IntegerDeserializer, IntegerSerializer, StringDeserializer, StringSerializer }
 import scala.concurrent.Future
 
 object MyAkkaKafka extends MyResources {
@@ -16,7 +16,7 @@ object MyAkkaKafka extends MyResources {
 
   val topicName = "a-topic"
 
-  def integerProducerSettings = ProducerSettings(system, new IntegerSerializer, new IntegerSerializer)
+  def integerProducerSettings: ProducerSettings[Integer, Integer] = ProducerSettings(system, new IntegerSerializer, new IntegerSerializer)
     .withBootstrapServers(bootstrapServers)
 
   val integerConsumerSettings: ConsumerSettings[Integer, Integer] =
@@ -81,7 +81,7 @@ object MyAkkaKafkaDoubler extends App {
       println(s"$step1 -> $step2: $msg")
       ProducerMessage.Message(new ProducerRecord[Integer, Integer](step2, msg.record.value * 3), msg.committableOffset)
     }
-    .runWith(Producer.commitableSink(integerProducerSettings))
+    .runWith(Producer.committableSink(integerProducerSettings))
   val control: Consumer.Control = Consumer.committableSource(consumerSettings, Subscriptions.topics(step2))
     .mapAsync(3) { msg ⇒
       println(msg)

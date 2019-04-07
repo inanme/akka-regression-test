@@ -30,16 +30,16 @@ package fdfjdafdsasflds23 {
       super.postStop()
     }
   }
-  object MyCluster1 extends App with MyCluster {
-    swallow(system.actorOf(Props[ClusterDomainEventListener]))
+  object MyCluster1 extends App with MyRemoteResources1 {
+    system.actorOf(Props[ClusterDomainEventListener])
     Await.result(system.whenTerminated, Duration.Inf)
   }
-  object MyCluster2 extends App with MyCluster {
-    swallow(system.actorOf(Props[ClusterDomainEventListener]))
+  object MyCluster2 extends App with MyRemoteResources2 {
+    system.actorOf(Props[ClusterDomainEventListener])
     Await.result(system.whenTerminated, Duration.Inf)
   }
-  object MyCluster3 extends App with MyCluster {
-    swallow(system.actorOf(Props[ClusterDomainEventListener]))
+  object MyCluster3 extends App with MyRemoteResources3 {
+    system.actorOf(Props[ClusterDomainEventListener])
     Await.result(system.whenTerminated, Duration.Inf)
   }
 }

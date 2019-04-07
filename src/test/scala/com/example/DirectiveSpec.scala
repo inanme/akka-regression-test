@@ -7,7 +7,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.testkit.EventFilter
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.{ FreeSpec, Matchers }
 
 class DirectiveSpec extends FreeSpec with Matchers with ScalatestRouteTest {
   override def testConfigSource: String =
@@ -19,7 +19,7 @@ class DirectiveSpec extends FreeSpec with Matchers with ScalatestRouteTest {
 
   def generateUuid: Directive1[UUID] = {
     //provide(UUID.randomUUID)
-    extract(ctx => UUID.randomUUID)
+    extract(_ => UUID.randomUUID)
   }
 
   def generateUuidIfNotPresent: Directive1[UUID] = optionalHeaderValueByName("my-uuid") flatMap {
@@ -28,7 +28,7 @@ class DirectiveSpec extends FreeSpec with Matchers with ScalatestRouteTest {
       val uuid = UUID.randomUUID()
       val uuidHeader = RawHeader("my-uuid", uuid.toString)
       mapRequest(r ⇒ r.withHeaders(uuidHeader +: r.headers)) &
-      provide(uuid)
+        provide(uuid)
   }
 
   "The UUID Directive" - {
@@ -54,13 +54,14 @@ class DirectiveSpec extends FreeSpec with Matchers with ScalatestRouteTest {
       var uuid1: String = ""
       var uuid2: String = ""
       Get() ~> generateUuidIfNotPresent {
-        uuid => {
-          uuid1 = uuid.toString
-          generateUuidIfNotPresent { another =>
-            uuid2 = another.toString
-            complete("")
+        uuid =>
+          {
+            uuid1 = uuid.toString
+            generateUuidIfNotPresent { another =>
+              uuid2 = another.toString
+              complete("")
+            }
           }
-        }
       } ~> check {
         //fails
         uuid1 shouldEqual uuid2

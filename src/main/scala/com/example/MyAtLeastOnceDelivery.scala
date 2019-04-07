@@ -9,7 +9,6 @@ import scala.concurrent._
 import scala.concurrent.duration._
 
 package r43ejdsmkl {
-  //import java.util.concurrent.TimeUnit
 
   case object MyInit
   case object MyAck
@@ -29,13 +28,12 @@ package r43ejdsmkl {
           ref = myActor,
           onInitMessage = MyInit,
           ackMessage = MyAck,
-          onCompleteMessage = Done
-        ))
+          onCompleteMessage = Done))
 
-//    (1 to 10).foreach(it ⇒ {
-//      myActor ! "message" + it
-//      //TimeUnit.SECONDS.sleep(2L)
-//    })
+    //    (1 to 10).foreach(it ⇒ {
+    //      myActor ! "message" + it
+    //      //sleep(2 seconds)
+    //    })
     Await.result(system.whenTerminated, Duration.Inf)
   }
   class GoodPrinter extends Actor with ActorLogging {

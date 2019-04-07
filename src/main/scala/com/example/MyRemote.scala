@@ -8,8 +8,6 @@ import scala.concurrent.duration._
 
 package fdfjdasflds23 {
 
-  import java.util.concurrent.TimeUnit
-
   object MyRemoteApp1 extends App with MyRemoteResources1 {
     val actor = system.actorOf(Props[Echo], "echo")
     Await.result(system.whenTerminated, Duration.Inf)
@@ -17,7 +15,7 @@ package fdfjdasflds23 {
   object MyRemoteApp2 extends App with MyRemoteResources2 {
     implicit val timeout = Timeout(10 seconds)
     val actor = system.actorSelection("akka.tcp://remote1@127.0.0.1:2551/user/echo")
-    TimeUnit.SECONDS.sleep(1L)
+    sleep(1 second)
     (actor ? "hello").onComplete(printTry)
   }
 }

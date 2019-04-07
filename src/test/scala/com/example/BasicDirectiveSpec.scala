@@ -1,12 +1,12 @@
 package com.example
 
-import akka.http.scaladsl.marshalling.{Marshaller, ToEntityMarshaller}
+import akka.http.scaladsl.marshalling.{ Marshaller, ToEntityMarshaller }
 import akka.http.scaladsl.model.HttpEntity
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
-import org.scalatest.{FlatSpec, Matchers}
+import akka.http.scaladsl.unmarshalling.{ FromEntityUnmarshaller, Unmarshaller }
+import org.scalatest.{ FlatSpec, Matchers }
 import scala.concurrent.Future
 
 class BasicDirectiveSpec extends FlatSpec with Matchers with ScalatestRouteTest {
@@ -15,7 +15,7 @@ class BasicDirectiveSpec extends FlatSpec with Matchers with ScalatestRouteTest 
 
   implicit final def unmarshaller: FromEntityUnmarshaller[Int] =
     Unmarshaller.stringUnmarshaller
-      .flatMap(ctx => mat => int => Future.successful(int.toInt))
+      .flatMap(_ => _ => int => Future.successful(int.toInt))
 
   implicit final def marshaller: ToEntityMarshaller[Int] =
     Marshaller.withFixedContentType(`application/json`) { a =>

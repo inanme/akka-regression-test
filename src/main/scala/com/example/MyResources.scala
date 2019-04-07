@@ -1,54 +1,67 @@
 package com.example
 
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, Terminated }
 import akka.stream.ActorMaterializer
-import com.typesafe.config.{Config, ConfigFactory}
-import scala.concurrent.{Await, ExecutionContextExecutor}
+import com.typesafe.config.{ Config, ConfigFactory }
+
+import scala.concurrent.{ Await, ExecutionContextExecutor, Future }
 import scala.concurrent.duration.Duration
 import scala.concurrent.duration._
 
 trait MyResources {
-  implicit val system: ActorSystem = ActorSystem()
+  implicit val system: ActorSystem = ActorSystem("some-system")
   implicit val executor: ExecutionContextExecutor = system.dispatcher
   implicit val materializer: ActorMaterializer = ActorMaterializer()
-  def terminate() = {
+
+  def terminate(): Future[Terminated] = {
     materializer.shutdown()
     Await.ready(system.terminate(), 3 seconds)
   }
 }
+
 trait MyRemoteResources1 {
-  implicit val system: ActorSystem = ActorSystem("remote1", ConfigFactory.load().getConfig("remote1"))
+  implicit val system: ActorSystem = ActorSystem("words", ConfigFactory.load().getConfig("node1"))
   implicit val executor: ExecutionContextExecutor = system.dispatcher
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 }
+
 trait MyRemoteResources2 {
-  implicit val system: ActorSystem = ActorSystem("remote1", ConfigFactory.load().getConfig("remote2"))
+  implicit val system: ActorSystem = ActorSystem("words", ConfigFactory.load().getConfig("node2"))
   implicit val executor: ExecutionContextExecutor = system.dispatcher
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 }
-trait MyCluster {
-  implicit val system: ActorSystem = ActorSystem("words", ConfigFactory.load().getConfig("cluxter"))
+
+trait MyRemoteResources3 {
+  implicit val system: ActorSystem = ActorSystem("words", ConfigFactory.load().getConfig("node3"))
   implicit val executor: ExecutionContextExecutor = system.dispatcher
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 }
+
 trait MyInmemResources {
   implicit val system: ActorSystem = ActorSystem("inmem", PersistenceConfig("akka.persistence.journal.inmem").akkaConfig)
   implicit val executor: ExecutionContextExecutor = system.dispatcher
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 }
+
 trait MyFailingOnceResources {
   implicit val system: ActorSystem = ActorSystem("failing", PersistenceConfig("inmemFailOnceJournal").akkaConfig)
   implicit val executor: ExecutionContextExecutor = system.dispatcher
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 }
+
 trait MyFailingResources {
   implicit val system: ActorSystem = ActorSystem("failing", PersistenceConfig("inmemTimingOutJournal").akkaConfig)
   implicit val executor: ExecutionContextExecutor = system.dispatcher
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 }
-case class PersistenceConfig(journalPlugin: String, snapshotPlugin: Option[String] = None,
-                             journalDirectory: Option[String] = None, snapshotDirectory: Option[String] = None,
-                             redeliverInterval: Duration = 11 seconds, maxUnconfirmedMessages: Int = 30) {
+
+case class PersistenceConfig(
+  journalPlugin: String,
+  snapshotPlugin: Option[String] = None,
+  journalDirectory: Option[String] = None,
+  snapshotDirectory: Option[String] = None,
+  redeliverInterval: Duration = 11 seconds,
+  maxUnconfirmedMessages: Int = 30) {
   def akkaConfig: Config = ConfigFactory.parseString(
     s"""akka {
        | test.filter-leeway = 20s
@@ -91,15 +104,14 @@ case class PersistenceConfig(journalPlugin: String, snapshotPlugin: Option[Strin
        |}
        |
        |inmemTimingOutJournal {
-       | class = "org.inanme.InmemTimingOutJournal"
+       | class = "com.example.InmemTimingOutJournal"
        | plugin-dispatcher = "akka.actor.default-dispatcher"
        |}
        |
        |inmemFailOnceJournal{
-       | class = "org.inanme.InmemFailOnceJournal"
+       | class = "com.example.InmemFailOnceJournal"
        | plugin-dispatcher = "akka.actor.default-dispatcher"
        |}
        |
-       | """.stripMargin
-  )
+       | """.stripMargin)
 }

@@ -5,7 +5,6 @@ import akka.testkit._
 import org.scalatest._
 
 class EmptyTest extends TestKit(ActorSystem("MySpec"))
-  with ImplicitSender
   with WordSpecLike
   with Matchers
   with BeforeAndAfterAll {
