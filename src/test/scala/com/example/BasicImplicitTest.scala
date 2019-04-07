@@ -10,6 +10,7 @@ import scala.concurrent.duration._
 class BasicImplicitTest extends TestKit(ActorSystem("Doubles-actor"))
   with WordSpecLike
   with Matchers
+  with ImplicitSender
   with Eventually {
 
   "Doubler" should {

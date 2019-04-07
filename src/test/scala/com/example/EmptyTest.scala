@@ -7,6 +7,7 @@ import org.scalatest._
 class EmptyTest extends TestKit(ActorSystem("MySpec"))
   with WordSpecLike
   with Matchers
+  with ImplicitSender
   with BeforeAndAfterAll {
 
   import system.dispatcher

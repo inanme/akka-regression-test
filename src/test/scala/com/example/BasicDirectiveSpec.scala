@@ -24,8 +24,30 @@ class BasicDirectiveSpec extends FlatSpec with Matchers with ScalatestRouteTest 
 
   val directive1: Directive1[Int] = provide(1)
   val directive2: Directive1[Int] = provide(2)
-  "Basic directives" should "be compose" in {
+  val loggingDirective: Directive0 = Directive { next =>
+    println("hi I am here")
+    next(())
+  }
+  "Basic directives" should "be joined" in {
     val directive3: Directive[(Int, Int)] = directive1 & directive2
+    Get() ~> directive3 { (m: Int, n: Int) => complete(m + n) } ~> check {
+      responseAs[Int] shouldBe 3
+    }
+  }
+  it should "be ORed1" in {
+    val directive3: Directive1[Int] = directive1 | directive2
+    Get() ~> directive3 { r => complete(r) } ~> check {
+      responseAs[Int] shouldBe 1
+    }
+  }
+  it should "be ORed2" in {
+    val directive3: Directive1[Int] = directive2 | directive1
+    Get() ~> directive3 { r => complete(r) } ~> check {
+      responseAs[Int] shouldBe 2
+    }
+  }
+  it should "be joined all" in {
+    val directive3: Directive[(Int, Int)] = loggingDirective & directive2 & directive1
     Get() ~> directive3 { (m: Int, n: Int) => complete(m + n) } ~> check {
       responseAs[Int] shouldBe 3
     }
@@ -48,6 +70,44 @@ class BasicDirectiveSpec extends FlatSpec with Matchers with ScalatestRouteTest 
     }
     Get() ~> route1 ~> check {
       responseAs[Int] shouldBe 3
+    }
+  }
+  it should "flatMap" in {
+    val intParameter: Directive1[Int] = parameter("a".as[Int])
+
+    //def tflatMap[R: Tuple](f: L ⇒ Directive[R]): Directive[R] =
+    //def flatMap[R: Tuple](f: T ⇒ Directive[R]): Directive[R] =
+    val myDirective: Directive1[Int] =
+      intParameter.flatMap {
+        case a if a > 0 => provide(2 * a)
+        case _ => reject
+      }
+
+    // tests:
+    Get("/?a=21") ~> myDirective(i => complete(i.toString)) ~> check {
+      responseAs[String] shouldEqual "42"
+    }
+    Get("/?a=-18") ~> myDirective(i => complete(i.toString)) ~> check {
+      handled shouldEqual false
+    }
+  }
+  it should "tflatMap" in {
+    val intParameter: Directive1[Int] = parameter("a".as[Int])
+
+    //def tflatMap[R: Tuple](f: L ⇒ Directive[R]): Directive[R] =
+    //def flatMap[R: Tuple](f: T ⇒ Directive[R]): Directive[R] =
+    val myDirective: Directive1[Int] =
+      intParameter.tflatMap {
+        case Tuple1(a) if a > 0 => provide(2 * a)
+        case _ => reject
+      }
+
+    // tests:
+    Get("/?a=21") ~> myDirective(i => complete(i.toString)) ~> check {
+      responseAs[String] shouldEqual "42"
+    }
+    Get("/?a=-18") ~> myDirective(i => complete(i.toString)) ~> check {
+      handled shouldEqual false
     }
   }
 }
