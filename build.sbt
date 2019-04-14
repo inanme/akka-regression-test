@@ -2,47 +2,47 @@ name := """makka"""
 version := "1.0"
 scalaVersion := "2.12.8"
 
-import versions._
-
 PB.targets in Compile := Seq(
   scalapb.gen() -> (sourceManaged in Compile).value
 )
 
 libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-actor" % akkaVersion,
-  "com.typesafe.akka" %% "akka-agent" % akkaVersion,
-  "com.typesafe.akka" %% "akka-camel" % akkaVersion,
-  "com.typesafe.akka" %% "akka-cluster" % akkaVersion,
-  "com.typesafe.akka" %% "akka-cluster-typed" % akkaVersion,
-  "com.typesafe.akka" %% "akka-cluster-metrics" % akkaVersion,
-  "com.typesafe.akka" %% "akka-cluster-sharding" % akkaVersion,
-  "com.typesafe.akka" %% "akka-cluster-tools" % akkaVersion,
-  "com.typesafe.akka" %% "akka-contrib" % akkaVersion,
-  "com.typesafe.akka" %% "akka-multi-node-testkit" % akkaVersion % Test,
-  "com.typesafe.akka" %% "akka-osgi" % akkaVersion,
-  "com.typesafe.akka" %% "akka-persistence" % akkaVersion,
-  "com.typesafe.akka" %% "akka-persistence-tck" % akkaVersion,
-  "com.typesafe.akka" %% "akka-remote" % akkaVersion,
-  "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
-  "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-  "com.typesafe.akka" %% "akka-stream-kafka" % akkaKafkaVersion,
-  "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test,
-  "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
-  "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
-  "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test,
+  "com.typesafe.akka" %% "akka-actor" % Version.akka,
+  "com.typesafe.akka" %% "akka-actor-testkit-typed" % Version.akka % Test,
+  "com.typesafe.akka" %% "akka-actor-typed" % Version.akka,
+  "com.typesafe.akka" %% "akka-agent" % Version.akka,
+  "com.typesafe.akka" %% "akka-camel" % Version.akka,
+  "com.typesafe.akka" %% "akka-cluster" % Version.akka,
+  "com.typesafe.akka" %% "akka-cluster-tools" % Version.akka,
+  "com.typesafe.akka" %% "akka-cluster-metrics" % Version.akka,
+  "com.typesafe.akka" %% "akka-cluster-sharding" % Version.akka,
+  "com.typesafe.akka" %% "akka-cluster-sharding-typed" % Version.akka,
+  "com.typesafe.akka" %% "akka-cluster-tools" % Version.akka,
+  "com.typesafe.akka" %% "akka-cluster-typed" % Version.akka,
+  "com.typesafe.akka" %% "akka-contrib" % Version.akka,
+  "com.typesafe.akka" %% "akka-distributed-data" % Version.akka,
+  "com.typesafe.akka" %% "akka-http" % Version.akkaHttp,
+  "com.typesafe.akka" %% "akka-http-core" % Version.akkaHttp,
+  "com.typesafe.akka" %% "akka-http-jackson" % Version.akkaHttp,
+  "com.typesafe.akka" %% "akka-http-testkit" % Version.akkaHttp,
+  "com.typesafe.akka" %% "akka-multi-node-testkit" % Version.akka % Test,
+  "com.typesafe.akka" %% "akka-osgi" % Version.akka,
+  "com.typesafe.akka" %% "akka-persistence" % Version.akka,
+  "com.typesafe.akka" %% "akka-persistence-query" % Version.akka,
+  "com.typesafe.akka" %% "akka-persistence-tck" % Version.akka,
+  "com.typesafe.akka" %% "akka-persistence-typed" % Version.akka,
+  "com.typesafe.akka" %% "akka-remote" % Version.akka,
+  "com.typesafe.akka" %% "akka-slf4j" % Version.akka,
+  "com.typesafe.akka" %% "akka-stream" % Version.akka,
+  "com.typesafe.akka" %% "akka-stream-kafka" % Version.akkaKafka,
+  "com.typesafe.akka" %% "akka-stream-testkit" % Version.akka % Test,
+  "com.typesafe.akka" %% "akka-stream-typed" % Version.akka,
+  "com.typesafe.akka" %% "akka-testkit" % Version.akka % Test,
 
-  "com.typesafe.akka" %% "akka-distributed-data" % akkaVersion,
-  "com.typesafe.akka" %% "akka-persistence-query" % akkaVersion,
-
-  "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
-  "com.typesafe.akka" %% "akka-http-core" % akkaHttpVersion,
-  "com.typesafe.akka" %% "akka-http-jackson" % akkaHttpVersion,
-  "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion,
-
-  "org.json4s" %% "json4s-jackson" % json4sVersion,
+  "org.json4s" %% "json4s-jackson" % Version.json4s,
 
   "com.trueaccord.scalapb" %% "scalapb-json4s" % "0.3.3",
-  "com.trueaccord.scalapb" %% "scalapb-runtime" % scalapbVersion % "protobuf",
+  "com.trueaccord.scalapb" %% "scalapb-runtime" % Version.scalapb % "protobuf",
 
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
