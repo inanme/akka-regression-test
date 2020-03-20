@@ -1,6 +1,7 @@
 package com.example
 
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicLong
 
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directives._
@@ -70,18 +71,31 @@ class DirectiveSpec extends FreeSpec with Matchers with ScalatestRouteTest {
     "will generate different UUID per request" in {
       //like the runtime, instantiate route once
       val uuidRoute: Route = generateUuid { uuid => complete(uuid.toString) }
-      var uuid1: String = ""
-      var uuid2: String = ""
-      Get() ~> uuidRoute ~> check {
+      val uuid1 = Get() ~> uuidRoute ~> check {
         responseAs[String].length shouldBe 36
-        uuid1 = responseAs[String]
+        responseAs[String]
       }
-      Get() ~> uuidRoute ~> check {
+      val uuid2 = Get() ~> uuidRoute ~> check {
         responseAs[String].length shouldBe 36
-        uuid2 = responseAs[String]
+        responseAs[String]
       }
-      //fails!
       uuid1 shouldNot equal(uuid2)
+    }
+    "will increment just once" in {
+      val counter = new AtomicLong()
+      val metric1: Directive0 = Directive { next =>
+        counter.incrementAndGet()
+        next(())
+      }
+      //val metric2: Directive0 = extract(_ => counter.incrementAndGet()).flatMap(_ => pass)
+      val route: Route = metric1 & complete(String.valueOf(counter.get()))
+      val val1 = Get() ~> route ~> check {
+        responseAs[String]
+      }
+      val val2 = Get() ~> route ~> check {
+        responseAs[String]
+      }
+      val1 should equal(val2)
     }
   }
   "Loggers" - {

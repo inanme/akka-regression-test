@@ -93,7 +93,7 @@ package jfdklafjkldsfdsjkgfdl {
 
 }
 
-package fdjsklfjdsklnfdmbtriocxkla{
+package fdjsklfjdsklnfdmbtriocxkla {
 
   object SupervisingActor {
     def apply(): Behavior[String] =
@@ -139,7 +139,7 @@ package fdjsklfjdsklnfdmbtriocxkla{
 
   }
 
-  object Main extends App{
+  object Main extends App {
     val m: ActorSystem[String] = ActorSystem(SupervisingActor(), "testSystem")
     m ! "failChild"
   }
