@@ -5,9 +5,11 @@ import java.util.concurrent.atomic.AtomicLong
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import org.scalatest.{ FreeSpec, Matchers }
 
-class IncrementingDirectiveSpec extends FreeSpec with Matchers with ScalatestRouteTest {
+class IncrementingDirectiveSpec
+    extends org.scalatest.freespec.AnyFreeSpec
+    with org.scalatest.matchers.should.Matchers
+    with ScalatestRouteTest {
 
   "The Increment Directive" - {
     "will increment just once" in {
@@ -21,11 +23,11 @@ class IncrementingDirectiveSpec extends FreeSpec with Matchers with ScalatestRou
         }
       }
       val val1 = Get() ~> route ~> check {
-        responseAs[String]
-      }
+          responseAs[String]
+        }
       val val2 = Get() ~> route ~> check {
-        responseAs[String]
-      }
+          responseAs[String]
+        }
       val1 shouldNot equal(val2)
     }
   }

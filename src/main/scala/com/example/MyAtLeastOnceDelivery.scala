@@ -4,56 +4,67 @@ import akka._
 import akka.actor._
 import akka.persistence.AtLeastOnceDelivery._
 import akka.persistence._
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent._
 import scala.concurrent.duration._
 
 package r43ejdsmkl {
 
   case object MyInit
+
   case object MyAck
+
   @SerialVersionUID(1L)
   case class Print(deliveryId: Long, message: String)
+
   case class OK(deliveryId: Long)
+
   case object Snapshot
+
   object MyAtLeastOnceDelivery extends App with MyInmemResources {
-    val props = Props(new MyAtLeastOnceDelivery(system.actorOf(Props[BadPrinter])))
+    val props   = Props(new MyAtLeastOnceDelivery(system.actorOf(Props[BadPrinter]())))
     val myActor = system.actorOf(props)
 
     import akka.stream.scaladsl._
+
     Source(1 to 10)
-      .map(it ⇒ "message" + it)
+      .map(it => "message" + it)
       .runWith(
-        Sink.actorRefWithAck(
+        Sink.actorRefWithBackpressure(
           ref = myActor,
           onInitMessage = MyInit,
           ackMessage = MyAck,
-          onCompleteMessage = Done))
+          onCompleteMessage = Done,
+          onFailureMessage = _ => Done
+        )
+      )
 
-    //    (1 to 10).foreach(it ⇒ {
+    //    (1 to 10).foreach(it => {
     //      myActor ! "message" + it
     //      //sleep(2 seconds)
     //    })
     Await.result(system.whenTerminated, Duration.Inf)
   }
+
   class GoodPrinter extends Actor with ActorLogging {
     override def receive: Receive = {
-      case Print(deliveryId, message) ⇒
+      case Print(deliveryId, message) =>
         log.info(s"Printing : $message")
         sender() ! OK(deliveryId)
     }
   }
+
   class BadPrinter extends Actor with ActorLogging {
     override def receive: Receive = {
-      case Print(deliveryId, message) ⇒
+      case Print(deliveryId, message) =>
         if (deliveryId % 5 != 0) {
           log.info(s"Printing : $message")
           sender() ! OK(deliveryId)
-        } else {
+        } else
           log.info(s"Fault : $message")
-        }
     }
   }
+
   class MyAtLeastOnceDelivery(printer: ActorRef) extends AtLeastOnceDelivery with ActorLogging {
     override def persistenceId = "12447389"
 
@@ -63,7 +74,8 @@ package r43ejdsmkl {
 
     override def preStart(): Unit = {
       super.preStart()
-      cancellable = context.system.scheduler.schedule(3 seconds, 3 seconds, self, Snapshot)
+      cancellable =
+        context.system.scheduler.scheduleAtFixedRate(3 seconds, 3 seconds, self, Snapshot)
     }
 
     override def postStop(): Unit = {
@@ -72,51 +84,61 @@ package r43ejdsmkl {
     }
 
     override def receiveRecover: Receive = {
-      case message: String ⇒
-        deliver(printer.path) { deliveryId ⇒
+      case message: String =>
+        deliver(printer.path) { deliveryId =>
           Print(deliveryId, message)
         }
-      case SnapshotOffer(metadata, snapshot) ⇒
+      case SnapshotOffer(metadata, snapshot) =>
         val adjustedUnconfirmedDeliveries =
-          snapshot.asInstanceOf[AtLeastOnceDeliverySnapshot]
+          snapshot
+            .asInstanceOf[AtLeastOnceDeliverySnapshot]
             .getUnconfirmedDeliveries
             .asScala
             .map(_.copy(destination = printer.path))
-        log.debug("Recovering from Snapshot: {} with {} unconfirmed deliveries", metadata, adjustedUnconfirmedDeliveries.size)
-        setDeliverySnapshot(snapshot.asInstanceOf[AtLeastOnceDeliverySnapshot].copy(unconfirmedDeliveries = adjustedUnconfirmedDeliveries.toList))
-      case it ⇒ log.info(s"<<receiveRecover>> : $it")
+        log.debug(
+          "Recovering from Snapshot: {} with {} unconfirmed deliveries",
+          metadata,
+          adjustedUnconfirmedDeliveries.size
+        )
+        setDeliverySnapshot(
+          snapshot
+            .asInstanceOf[AtLeastOnceDeliverySnapshot]
+            .copy(unconfirmedDeliveries = adjustedUnconfirmedDeliveries.toList)
+        )
+      case it => log.info(s"<<receiveRecover>> : $it")
     }
 
     var upstream: ActorRef = context.actorOf(Props.empty)
 
     override def receiveCommand: Receive = {
-      case Done ⇒ context.system.terminate().onComplete(printTry)
-      case MyInit ⇒
+      case Done => context.system.terminate().onComplete(printTry)
+      case MyInit =>
         upstream = sender()
         upstream ! MyAck
-      case message: String ⇒
-        persist(message) { _ ⇒
-          deliver(printer.path) { deliveryId ⇒
+      case message: String =>
+        persist(message) { _ =>
+          deliver(printer.path) { deliveryId =>
             Print(deliveryId, message)
           }
         }
-      case OK(deliveryId) ⇒
+      case OK(deliveryId) =>
         swallow(confirmDelivery(deliveryId))
         upstream ! MyAck
-      case Snapshot ⇒
+      case Snapshot =>
         val x = getDeliverySnapshot
         log.debug("Saving snapshot {}", x)
         saveSnapshot(x)
-      case SaveSnapshotSuccess(metadata) ⇒
+      case SaveSnapshotSuccess(metadata) =>
         log.debug(s"SaveSnapshotSuccess metadata")
         deleteMessages(metadata.sequenceNr)
         deleteSnapshots(SnapshotSelectionCriteria(maxTimestamp = metadata.timestamp - 1))
-      //      case UnconfirmedWarning(unconfirmedDeliveries) ⇒
-      //        unconfirmedDeliveries.foreach(it ⇒ {
+      //      case UnconfirmedWarning(unconfirmedDeliveries) =>
+      //        unconfirmedDeliveries.foreach(it => {
       //          log.debug(s"Manual confirm of ${it.message}")
       //          confirmDelivery(it.deliveryId)
       //        })
-      case it ⇒ log.info(s"<<receiveCommand>>: $it")
+      case it => log.info(s"<<receiveCommand>>: $it")
     }
   }
+
 }

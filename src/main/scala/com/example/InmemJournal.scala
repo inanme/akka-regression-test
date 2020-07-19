@@ -9,14 +9,25 @@ import akka.persistence.PersistentRepr
 import akka.persistence.AtomicWrite
 
 abstract class JournalBase extends AsyncWriteJournal {
-  override def asyncReadHighestSequenceNr(persistenceId: String, fromSequenceNr: Long): Future[Long] = Future.successful(1L)
+  override def asyncReadHighestSequenceNr(
+      persistenceId: String,
+      fromSequenceNr: Long
+  ): Future[Long] = Future.successful(1L)
 
-  override def asyncReplayMessages(persistenceId: String, fromSequenceNr: Long, toSequenceNr: Long, max: Long)(recoveryCallback: PersistentRepr ⇒ Unit): Future[Unit] = Future.successful(())
+  override def asyncReplayMessages(
+      persistenceId: String,
+      fromSequenceNr: Long,
+      toSequenceNr: Long,
+      max: Long
+  )(recoveryCallback: PersistentRepr => Unit): Future[Unit] = Future.successful(())
 
-  def asyncDeleteMessagesTo(persistenceId: String, toSequenceNr: Long): Future[Unit] = Future.successful(())
+  def asyncDeleteMessagesTo(persistenceId: String, toSequenceNr: Long): Future[Unit] =
+    Future.successful(())
 }
 class InmemTimingOutJournal extends JournalBase {
-  override def asyncWriteMessages(messages: immutable.Seq[AtomicWrite]): Future[immutable.Seq[Try[Unit]]] = {
+  override def asyncWriteMessages(
+      messages: immutable.Seq[AtomicWrite]
+  ): Future[immutable.Seq[Try[Unit]]] = {
     import scala.concurrent.ExecutionContext.Implicits.global
     Future {
       sleepForever()
@@ -27,12 +38,13 @@ class InmemTimingOutJournal extends JournalBase {
 class InmemFailOnceJournal extends JournalBase {
   val flag = new AtomicBoolean(false)
 
-  override def asyncWriteMessages(messages: immutable.Seq[AtomicWrite]): Future[immutable.Seq[Try[Unit]]] = {
+  override def asyncWriteMessages(
+      messages: immutable.Seq[AtomicWrite]
+  ): Future[immutable.Seq[Try[Unit]]] = {
     import scala.concurrent.ExecutionContext.Implicits.global
     Future {
-      if (!flag.getAndSet(true)) {
+      if (!flag.getAndSet(true))
         sleepForever()
-      }
       Nil
     }
   }

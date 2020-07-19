@@ -12,10 +12,10 @@ package p3849jfdksl {
     case object Flush
     final case class Batch(obj: Seq[Any])
     sealed trait State
-    case object Idle extends State
+    case object Idle   extends State
     case object Active extends State
     sealed trait Data
-    case object Uninitialized extends Data
+    case object Uninitialized                                extends Data
     final case class Todo(target: ActorRef, queue: Seq[Any]) extends Data
     def props = Props(new MyFSM)
   }
@@ -26,7 +26,7 @@ package p3849jfdksl {
     startWith(Idle, Uninitialized)
     when(Idle) {
       case Event(SetTarget(ref), Uninitialized) =>
-        stay using Todo(ref, Vector.empty)
+        stay() using Todo(ref, Vector.empty)
       case Event(Queue(obj), t @ Todo(_, v)) =>
         goto(Active) using t.copy(queue = v :+ obj)
     }
@@ -49,7 +49,7 @@ package p3849jfdksl {
     whenUnhandled {
       case Event(e, s) =>
         log.warning("received unhandled request {} in state {}/{}", e, stateName, s)
-        stay
+        stay()
     }
     initialize()
   }
@@ -57,12 +57,13 @@ package p3849jfdksl {
     def props = Props(new MyFSMPrinter)
   }
   class MyFSMPrinter extends Actor with ActorLogging {
-    override def receive: Receive = LoggingReceive {
-      case it ⇒ log.info(it.toString)
-    }
+    override def receive: Receive =
+      LoggingReceive {
+        case it => log.info(it.toString)
+      }
   }
   object Main extends App with MyResources {
-    val fsm = system.actorOf(MyFSM.props, "fsm")
+    val fsm     = system.actorOf(MyFSM.props, "fsm")
     val printer = system.actorOf(MyFSMPrinter.props, "printer")
     fsm ! SetTarget(printer)
     fsm ! Queue(1)

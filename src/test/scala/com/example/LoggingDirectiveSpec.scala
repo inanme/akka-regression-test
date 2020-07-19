@@ -4,9 +4,11 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.testkit.EventFilter
-import org.scalatest.{ FreeSpec, Matchers }
 
-class LoggingDirectiveSpec extends FreeSpec with Matchers with ScalatestRouteTest {
+class LoggingDirectiveSpec
+    extends org.scalatest.freespec.AnyFreeSpec
+    with org.scalatest.matchers.should.Matchers
+    with ScalatestRouteTest {
   override def testConfigSource: String =
     s"""akka {
        | test.filter-leeway = 3s

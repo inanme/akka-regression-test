@@ -15,7 +15,7 @@ package fdjsiofsdjkld {
     override def receive: Receive = {
       case StopTheActor => context.stop(self)
       case FailTheActor => throw new RuntimeException
-      case x: Int => println(x)
+      case x: Int       => println(x)
     }
   }
 
@@ -23,15 +23,16 @@ package fdjsiofsdjkld {
 
     val protectedActorProps = BackoffSupervisor.props(
       BackoffOpts.onStop(
-        Props[SomeActor],
+        Props[SomeActor](),
         childName = "MyPersistentActor",
         minBackoff = 10 millis,
         maxBackoff = 100 millis,
         randomFactor = 0.2 // adds 20% "noise" to vary the intervals slightly
-      ))
+      )
+    )
 
     val protectedActor = system.actorOf(protectedActorProps, "protected-actor")
-    val simpleActor = system.actorOf(Props[SomeActor], "simple-actor")
+    val simpleActor    = system.actorOf(Props[SomeActor](), "simple-actor")
 
     (1 to 10).foreach { it =>
       protectedActor ! it

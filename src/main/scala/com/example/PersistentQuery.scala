@@ -20,39 +20,41 @@ package pr354890 {
       .take(30)
       .map(_.event)
       .map {
-        case Added(value) ⇒ s"Added $value"
-        case Subtracted(value) ⇒ s"Subtracted $value"
-        case State(value) ⇒ s"State $value"
+        case Added(value, _)      => s"Added $value"
+        case Subtracted(value, _) => s"Subtracted $value"
+        case State(value, _)      => s"State $value"
       }
     val matValue: Future[Done] = events.runWith(Sink.foreach(println))
     matValue.onComplete {
       case Success(_) =>
         Console println "Query completed successfully"
-        system terminate ()
+        system.terminate()
 
       case Failure(e) =>
-        Console println e
-        system terminate ()
+        e.printStackTrace()
+        system.terminate()
     }
   }
   object Main2 extends App with MyResources {
-    val queries = PersistenceQuery(system).readJournalFor[LeveldbReadJournal](LeveldbReadJournal.Identifier)
+    val queries =
+      PersistenceQuery(system).readJournalFor[LeveldbReadJournal](LeveldbReadJournal.Identifier)
     val nonInvasiveLog = (x: String) => {
       println(s"currentPersistenceId : $x")
       x
     }
     // Grab a list of all the persistenceIds as of this moment
-    val events = queries.currentPersistenceIds()
+    val events = queries
+      .currentPersistenceIds()
       .map(nonInvasiveLog)
       // currentEventsByPersistenceId will grab all the events as of this moment for a supplied persistence id
       .flatMapConcat(eachPersistentId => queries.currentEventsByPersistenceId(eachPersistentId))
       .map(eventEnvelope => eventEnvelope.event)
       .map({
-        case Added(value) => s"Added $value"
-        case Subtracted(value) => s"Subtracted $value"
+        case Added(value, _)      => s"Added $value"
+        case Subtracted(value, _) => s"Subtracted $value"
       })
     val matValue: Future[Done] = events.runWith(Sink.foreach(println))
-    matValue.onComplete { it ⇒
+    matValue.onComplete { it =>
       println(s"result $it")
       system.terminate()
     }

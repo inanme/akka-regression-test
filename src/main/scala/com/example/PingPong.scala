@@ -24,24 +24,24 @@ class PingPong extends Actor {
         sender() ! EndOfGame
         self ! PoisonPill
       } else {
-        println(counter + " ping " + self.toString())
-        sender ! Pong(counter + 1)
+        println(counter.toString + " ping " + self.toString())
+        sender() ! Pong(counter + 1)
       }
     case Pong(counter) =>
       if (terminate(counter)) {
         sender() ! EndOfGame
         self ! PoisonPill
       } else {
-        println(counter + " pong " + self.toString())
-        sender ! Ping(counter + 1)
+        println(counter.toString + " pong " + self.toString())
+        sender() ! Ping(counter + 1)
       }
     case EndOfGame =>
       context.system.terminate().onComplete(printTry)
   }
 }
 object PingPongTest extends App with MyResources {
-  val player1 = system.actorOf(Props[PingPong], name = "player1")
-  val player2 = system.actorOf(Props[PingPong], name = "player2")
+  val player1 = system.actorOf(Props[PingPong](), name = "player1")
+  val player2 = system.actorOf(Props[PingPong](), name = "player2")
   player2.tell(Ping(0), player1)
   Await.ready(system.whenTerminated, Duration.Inf)
 }

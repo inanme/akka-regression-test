@@ -1,12 +1,24 @@
 package com.example
 
-import akka.kafka.scaladsl.{ Consumer, Producer }
-import akka.kafka.{ ConsumerSettings, ProducerMessage, ProducerSettings, Subscriptions }
+import akka.kafka.scaladsl.{ Committer, Consumer, Producer }
+import akka.kafka.{
+  CommitterSettings,
+  ConsumerSettings,
+  ProducerMessage,
+  ProducerSettings,
+  Subscriptions
+}
 import akka.stream.scaladsl.{ Keep, Sink, Source }
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.TopicPartition
-import org.apache.kafka.common.serialization.{ IntegerDeserializer, IntegerSerializer, StringDeserializer, StringSerializer }
+import org.apache.kafka.common.serialization.{
+  IntegerDeserializer,
+  IntegerSerializer,
+  StringDeserializer,
+  StringSerializer
+}
+
 import scala.concurrent.Future
 
 object MyAkkaKafka extends MyResources {
@@ -16,8 +28,9 @@ object MyAkkaKafka extends MyResources {
 
   val topicName = "a-topic"
 
-  def integerProducerSettings: ProducerSettings[Integer, Integer] = ProducerSettings(system, new IntegerSerializer, new IntegerSerializer)
-    .withBootstrapServers(bootstrapServers)
+  def integerProducerSettings: ProducerSettings[Integer, Integer] =
+    ProducerSettings(system, new IntegerSerializer, new IntegerSerializer)
+      .withBootstrapServers(bootstrapServers)
 
   val integerConsumerSettings: ConsumerSettings[Integer, Integer] =
     ConsumerSettings(system, new IntegerDeserializer, new IntegerDeserializer)
@@ -37,22 +50,23 @@ import MyAkkaKafka._
 
 object MyAkkaKafkaProducer extends App {
   Source(1 to 10)
-    .map { elem => new ProducerRecord[String, String](topicName, (elem % 3).toString, elem.toString) }
+    .map { elem =>
+      new ProducerRecord[String, String](topicName, (elem % 3).toString, elem.toString)
+    }
     .runWith(Producer.plainSink(stringProducerSettings))
 }
 object MyAkkaKafkaConsumer extends App {
   val consumerSettings = stringConsumerSettings.withGroupId("MyAkkaKafkaConsumer")
-  Consumer.committableSource(consumerSettings, Subscriptions.topics(topicName))
-    .mapAsync(3) { msg ⇒
+  Consumer
+    .committableSource(consumerSettings, Subscriptions.topics(topicName))
+    .mapAsync(3) { msg =>
       val message = msg.record
-      val offset = msg.committableOffset.partitionOffset
+      val offset  = msg.committableOffset.partitionOffset
       println(message)
       println(offset)
-      Future.successful(msg)
+      Future.successful(msg.committableOffset)
     }
-    .mapAsync(3) { msg ⇒
-      msg.committableOffset.commitScaladsl()
-    }
+    .via(Committer.flow(CommitterSettings(system).withParallelism(3).withMaxBatch(1)))
     .runWith(Sink.ignore)
 }
 object MyAkkaKafkaConsumerExt extends App {
@@ -60,8 +74,10 @@ object MyAkkaKafkaConsumerExt extends App {
   val topics = Map(
     new TopicPartition(topicName, 0) -> 0L,
     new TopicPartition(topicName, 1) -> 0L,
-    new TopicPartition(topicName, 2) -> 0L)
-  val control: Consumer.Control = Consumer.plainSource(consumerSettings, Subscriptions.assignmentWithOffset(topics))
+    new TopicPartition(topicName, 2) -> 0L
+  )
+  val control: Consumer.Control = Consumer
+    .plainSource(consumerSettings, Subscriptions.assignmentWithOffset(topics))
     .mapAsync(3) { msg =>
       println(msg)
       Future.successful(msg)
@@ -71,19 +87,24 @@ object MyAkkaKafkaConsumerExt extends App {
 }
 object MyAkkaKafkaDoubler extends App {
   val consumerSettings = integerConsumerSettings.withGroupId("integer")
-  val step1 = "step-1"
-  val step2 = "step-2"
+  val step1            = "step-1"
+  val step2            = "step-2"
   Source(1 to 6)
-    .map { i ⇒ new ProducerRecord[Integer, Integer](step1, i) }
+    .map(i => new ProducerRecord[Integer, Integer](step1, i))
     .runWith(Producer.plainSink(integerProducerSettings))
-  Consumer.committableSource(consumerSettings, Subscriptions.topics(step1))
-    .map { msg ⇒
+  Consumer
+    .committableSource(consumerSettings, Subscriptions.topics(step1))
+    .map { msg =>
       println(s"$step1 -> $step2: $msg")
-      ProducerMessage.Message(new ProducerRecord[Integer, Integer](step2, msg.record.value * 3), msg.committableOffset)
+      ProducerMessage.Message(
+        new ProducerRecord[Integer, Integer](step2, msg.record.value * 3),
+        msg.committableOffset
+      )
     }
-    .runWith(Producer.committableSink(integerProducerSettings))
-  val control: Consumer.Control = Consumer.committableSource(consumerSettings, Subscriptions.topics(step2))
-    .mapAsync(3) { msg ⇒
+    .runWith(Producer.committableSink(integerProducerSettings, CommitterSettings(system)))
+  val control: Consumer.Control = Consumer
+    .committableSource(consumerSettings, Subscriptions.topics(step2))
+    .mapAsync(3) { msg =>
       println(msg)
       Future.successful(msg)
     }

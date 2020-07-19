@@ -1,11 +1,13 @@
 package com.example
-import org.scalatest.{ Matchers, WordSpec }
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.server._
 import Directives._
 
-class FullTestKitExampleSpec extends WordSpec with Matchers with ScalatestRouteTest {
+class FullTestKitExampleSpec
+    extends org.scalatest.wordspec.AnyWordSpecLike
+    with org.scalatest.matchers.should.Matchers
+    with ScalatestRouteTest {
 
   val smallRoute =
     get {
@@ -14,9 +16,9 @@ class FullTestKitExampleSpec extends WordSpec with Matchers with ScalatestRouteT
           "Captain on the bridge!"
         }
       } ~
-        path("ping") {
-          complete("PONG!")
-        }
+      path("ping") {
+        complete("PONG!")
+      }
     }
 
   "The service" should {

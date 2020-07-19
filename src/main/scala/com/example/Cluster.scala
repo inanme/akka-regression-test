@@ -11,18 +11,17 @@ package fdfjdafdsasflds23 {
     Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
 
     def receive: Receive = {
-      case MemberUp(member) => log.info(s"------$member UP.")
+      case MemberUp(member)     => log.info(s"------$member UP.")
       case MemberExited(member) => log.info(s"------$member EXITED.")
       case MemberRemoved(m, previousState) =>
-        if (previousState == MemberStatus.Exiting) {
+        if (previousState == MemberStatus.Exiting)
           log.info(s"------Member $m gracefully exited, REMOVED.")
-        } else {
+        else
           log.info(s"------$m downed after unreachable, REMOVED.")
-        }
-      case UnreachableMember(m) => log.info(s"------$m UNREACHABLE")
-      case ReachableMember(m) => log.info(s"------$m REACHABLE")
+      case UnreachableMember(m)   => log.info(s"------$m UNREACHABLE")
+      case ReachableMember(m)     => log.info(s"------$m REACHABLE")
       case s: CurrentClusterState => log.info(s"------cluster state: $s")
-      case it ⇒ log.info(s"-----What is this $it")
+      case it                     => log.info(s"-----What is this $it")
     }
 
     override def postStop(): Unit = {
@@ -31,16 +30,15 @@ package fdfjdafdsasflds23 {
     }
   }
   object MyCluster1 extends App with MyRemoteResources1 {
-    system.actorOf(Props[ClusterDomainEventListener])
+    system.actorOf(Props[ClusterDomainEventListener]())
     Await.result(system.whenTerminated, Duration.Inf)
   }
   object MyCluster2 extends App with MyRemoteResources2 {
-    system.actorOf(Props[ClusterDomainEventListener])
+    system.actorOf(Props[ClusterDomainEventListener]())
     Await.result(system.whenTerminated, Duration.Inf)
   }
   object MyCluster3 extends App with MyRemoteResources3 {
-    system.actorOf(Props[ClusterDomainEventListener])
+    system.actorOf(Props[ClusterDomainEventListener]())
     Await.result(system.whenTerminated, Duration.Inf)
   }
 }
-

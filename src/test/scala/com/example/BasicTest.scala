@@ -2,16 +2,18 @@ package com.example
 
 import akka.actor.ActorSystem
 import akka.testkit.{ TestKit, TestProbe }
-import org.scalatest.{ Matchers, WordSpecLike }
 
 import scala.concurrent.duration._
 
-class BasicTest extends TestKit(ActorSystem("Doubles-actor")) with WordSpecLike with Matchers {
+class BasicTest
+    extends TestKit(ActorSystem("Doubles-actor"))
+    with org.scalatest.wordspec.AnyWordSpecLike
+    with org.scalatest.matchers.should.Matchers {
 
   "Doubler" should {
     "double" in {
       val probe1 = TestProbe()
-      val d2 = system.actorOf(Doubler.props)
+      val d2     = system.actorOf(Doubler.props)
 
       within(300 milliseconds) {
         probe1.send(d2, 2)

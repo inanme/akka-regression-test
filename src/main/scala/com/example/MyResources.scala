@@ -1,7 +1,6 @@
 package com.example
 
 import akka.actor.{ ActorSystem, Terminated }
-import akka.stream.ActorMaterializer
 import com.typesafe.config.{ Config, ConfigFactory }
 
 import scala.concurrent.{ Await, ExecutionContextExecutor, Future }
@@ -9,61 +8,65 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.duration._
 
 trait MyResources {
-  implicit val system: ActorSystem = ActorSystem("some-system")
+  implicit val system: ActorSystem                = ActorSystem("some-system")
   implicit val executor: ExecutionContextExecutor = system.dispatcher
-  implicit val materializer: ActorMaterializer = ActorMaterializer()
 
-  def terminate(): Future[Terminated] = {
-    materializer.shutdown()
+  def terminate(): Future[Terminated] =
     Await.ready(system.terminate(), 3 seconds)
-  }
+}
+
+trait MyRemoteResourcesReceiver {
+  implicit val system: ActorSystem                = ActorSystem("receiver", ConfigFactory.load().getConfig("receiver"))
+  implicit val executor: ExecutionContextExecutor = system.dispatcher
+}
+
+trait MyRemoteResourcesSender {
+  implicit val system: ActorSystem                = ActorSystem("sender", ConfigFactory.load().getConfig("sender"))
+  implicit val executor: ExecutionContextExecutor = system.dispatcher
 }
 
 trait MyRemoteResources1 {
-  implicit val system: ActorSystem = ActorSystem("words", ConfigFactory.load().getConfig("node1"))
+  implicit val system: ActorSystem                = ActorSystem("words", ConfigFactory.load().getConfig("node1"))
   implicit val executor: ExecutionContextExecutor = system.dispatcher
-  implicit val materializer: ActorMaterializer = ActorMaterializer()
 }
 
 trait MyRemoteResources2 {
-  implicit val system: ActorSystem = ActorSystem("words", ConfigFactory.load().getConfig("node2"))
+  implicit val system: ActorSystem                = ActorSystem("words", ConfigFactory.load().getConfig("node2"))
   implicit val executor: ExecutionContextExecutor = system.dispatcher
-  implicit val materializer: ActorMaterializer = ActorMaterializer()
 }
 
 trait MyRemoteResources3 {
-  implicit val system: ActorSystem = ActorSystem("words", ConfigFactory.load().getConfig("node3"))
+  implicit val system: ActorSystem                = ActorSystem("words", ConfigFactory.load().getConfig("node3"))
   implicit val executor: ExecutionContextExecutor = system.dispatcher
-  implicit val materializer: ActorMaterializer = ActorMaterializer()
 }
 
 trait MyInmemResources {
-  implicit val system: ActorSystem = ActorSystem("inmem", PersistenceConfig("akka.persistence.journal.inmem").akkaConfig)
+  implicit val system: ActorSystem =
+    ActorSystem("inmem", PersistenceConfig("akka.persistence.journal.inmem").akkaConfig)
   implicit val executor: ExecutionContextExecutor = system.dispatcher
-  implicit val materializer: ActorMaterializer = ActorMaterializer()
 }
 
 trait MyFailingOnceResources {
-  implicit val system: ActorSystem = ActorSystem("failing", PersistenceConfig("inmemFailOnceJournal").akkaConfig)
+  implicit val system: ActorSystem =
+    ActorSystem("failing", PersistenceConfig("inmemFailOnceJournal").akkaConfig)
   implicit val executor: ExecutionContextExecutor = system.dispatcher
-  implicit val materializer: ActorMaterializer = ActorMaterializer()
 }
 
 trait MyFailingResources {
-  implicit val system: ActorSystem = ActorSystem("failing", PersistenceConfig("inmemTimingOutJournal").akkaConfig)
+  implicit val system: ActorSystem =
+    ActorSystem("failing", PersistenceConfig("inmemTimingOutJournal").akkaConfig)
   implicit val executor: ExecutionContextExecutor = system.dispatcher
-  implicit val materializer: ActorMaterializer = ActorMaterializer()
 }
 
 case class PersistenceConfig(
-  journalPlugin: String,
-  snapshotPlugin: Option[String] = None,
-  journalDirectory: Option[String] = None,
-  snapshotDirectory: Option[String] = None,
-  redeliverInterval: Duration = 11 seconds,
-  maxUnconfirmedMessages: Int = 30) {
-  def akkaConfig: Config = ConfigFactory.parseString(
-    s"""akka {
+    journalPlugin: String,
+    snapshotPlugin: Option[String] = None,
+    journalDirectory: Option[String] = None,
+    snapshotDirectory: Option[String] = None,
+    redeliverInterval: Duration = 11 seconds,
+    maxUnconfirmedMessages: Int = 30
+) {
+  def akkaConfig: Config = ConfigFactory.parseString(s"""akka {
        | test.filter-leeway = 20s
        |
        | log-config-on-start = off
