@@ -6,6 +6,10 @@ import akka.http.scaladsl.server.Directives._
 import akka.stream.scaladsl.Flow
 
 package fjdksla349 {
+
+  import akka.http.scaladsl.model.headers.RawHeader
+  import akka.http.scaladsl.server.{Directive0, Directive1, Route}
+
   object Handler2 extends App with MyResources {
     val handler: HttpRequest => HttpResponse = _ => HttpResponse(status = StatusCodes.BadRequest)
     Http().bindAndHandle(Flow.fromFunction(handler), "localhost", 8080)
@@ -27,6 +31,23 @@ package fjdksla349 {
         }
       }
     Http().bindAndHandle(route, "localhost", 8080)
+  }
 
+  object Route14 extends App with MyResources {
+    val intParameter: Directive1[Int] = parameter("a".as[Int])
+    val myDirective: Directive1[Int] =
+      intParameter.tflatMap {
+        case Tuple1(a) if a > 0 => provide(2 * a)
+        case _                  => reject
+      }
+
+    val addheader: Directive0 = mapResponseHeaders(headers => headers :+ RawHeader("x", "y"))
+
+    val route: Route = addheader {
+      myDirective { i =>
+        complete(i.toString)
+      }
+    }
+    Http().bindAndHandle(Route.seal(route), "localhost", 8080)
   }
 }
