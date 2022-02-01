@@ -1,6 +1,6 @@
 name := """makka"""
 version := "1.0"
-scalaVersion := "2.13.3"
+scalaVersion := "2.13.8"
 
 PB.targets in Compile := Seq(
   scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
@@ -42,7 +42,10 @@ libraryDependencies ++= Seq(
   "ch.qos.logback"              % "logback-classic"             % "1.2.10",
   "org.typelevel"              %% "cats-core"                   % "2.7.0",
   "org.iq80.leveldb"            % "leveldb"                     % "0.12",
-  "org.fusesource.leveldbjni"   % "leveldbjni-all"              % "1.8"
+  "org.fusesource.leveldbjni"   % "leveldbjni-all"              % "1.8",
+  "io.circe"                   %% "circe-core"                  % "0.14.1",
+  "io.circe"                   %% "circe-generic"               % "0.14.1",
+  "io.circe"                   %% "circe-parser"                % "0.14.1"
 )
 
 //https://tpolecat.github.io/2017/04/25/scalac-flags.html
@@ -59,9 +62,9 @@ scalacOptions ++= Seq(
   "-language:implicitConversions", // Allow definition of implicit functions called views
   "-language:reflectiveCalls",
   "-language:postfixOps",
-  "-unchecked",                    // Enable additional warnings where generated code depends on assumptions.
-  "-Xcheckinit",                   // Wrap field accessors to throw an exception on uninitialized access.
-  "-Xfatal-warnings",              // Fail the compilation if there are any warnings.
+  "-unchecked",  // Enable additional warnings where generated code depends on assumptions.
+  "-Xcheckinit", // Wrap field accessors to throw an exception on uninitialized access.
+  //"-Xfatal-warnings",              // Fail the compilation if there are any warnings.
   "-Xlint:adapted-args",           // Warn if an argument list is modified to match the receiver.
   "-Xlint:constant",               // Evaluation of a constant arithmetic expression results in an error.
   "-Xlint:delayedinit-select",     // Selecting member of DelayedInit.
@@ -77,6 +80,7 @@ scalacOptions ++= Seq(
   "-Xlint:stars-align",            // Pattern sequence wildcard must align with sequence component.
   "-Xlint:type-parameter-shadow",  // A local type parameter shadows a type already in scope.
   "-Yrangepos",
+  "-Ymacro-annotations",
   "-Ywarn-dead-code",        // Warn when dead code is identified.
   "-Ywarn-extra-implicit",   // Warn when more than one implicit parameter section is defined.
   "-Ywarn-numeric-widen",    // Warn when numerics are widened.
