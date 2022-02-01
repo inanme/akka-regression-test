@@ -17,7 +17,7 @@ class BasicDirectiveSpec extends AnyFlatSpec with Matchers with ScalatestRouteTe
 
   implicit final def unmarshaller: FromEntityUnmarshaller[Int] =
     Unmarshaller.stringUnmarshaller
-      .flatMap(_ => _ => int => Future.successful(int.toInt))
+      .flatMap(_ => _ => int => Future.fromTry(scala.util.Try(int.toInt)))
 
   implicit final def marshaller: ToEntityMarshaller[Int] =
     Marshaller.withFixedContentType(`application/json`) { a =>

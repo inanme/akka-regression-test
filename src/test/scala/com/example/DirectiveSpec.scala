@@ -15,6 +15,8 @@ class DirectiveSpec extends AnyFreeSpec with Matchers with ScalatestRouteTest {
     //provide(UUID.randomUUID)
     extract(_ => UUID.randomUUID)
 
+  def generate2Uuid: Directive[(UUID, UUID)] = generateUuid & generateUuid
+
   def generateUuidIfNotPresent: Directive1[UUID] =
     optionalHeaderValueByName("my-uuid") flatMap {
       case Some(uuid) => provide(UUID.fromString(uuid))
@@ -58,6 +60,20 @@ class DirectiveSpec extends AnyFreeSpec with Matchers with ScalatestRouteTest {
       } ~> check {
         //fails
         uuid1 shouldEqual uuid2
+      }
+    }
+
+    "uuids should be different" in {
+      Get() ~> generate2Uuid((uuid1, uuid2) =>
+        complete(s"${uuid1.toString}, ${uuid2.toString}")
+      ) ~> check {
+        handled shouldBe true
+        responseAs[String].split(",") match {
+          case Array(uuid1, uuid2) =>
+            uuid1 should not equal uuid2
+            println(uuid1, uuid2)
+          case _ => fail("unexpected payload")
+        }
       }
     }
   }

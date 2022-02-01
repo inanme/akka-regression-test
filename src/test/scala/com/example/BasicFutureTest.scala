@@ -14,7 +14,7 @@ class BasicFutureTest
     extends TestKit(ActorSystem("Doubles-actor"))
     with AnyWordSpecLike
     with Matchers {
-  implicit val timeout: Timeout     = 100 milliseconds
+  implicit val timeout: Timeout     = 100.milliseconds
   implicit val ec: ExecutionContext = system.dispatcher
   "Doubler" should {
     "double" in {

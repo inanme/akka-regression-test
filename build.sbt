@@ -6,6 +6,27 @@ PB.targets in Compile := Seq(
   scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
 )
 
+val Version = new {
+  val scalatest           = "3.2.10"
+  val scalatestScalacheck = scalatest + ".0"
+  val akka                = "2.6.18"
+  val akkaHttp            = "10.2.6"
+  val akkaKafka           = "2.0.3"
+  val json4s              = "3.6.8"
+  val scalapb             = "0.10.7"
+}
+
+val scalatest = Seq(
+  "org.scalatest"     %% "scalatest"       % Version.scalatest           % Test,
+  "org.scalatestplus" %% "scalacheck-1-15" % Version.scalatestScalacheck % Test
+)
+
+val circe = Seq(
+  "io.circe" %% "circe-core"    % "0.14.1",
+  "io.circe" %% "circe-generic" % "0.14.1",
+  "io.circe" %% "circe-parser"  % "0.14.1"
+)
+
 libraryDependencies ++= Seq(
   "com.typesafe.akka"          %% "akka-actor"                  % Version.akka,
   "com.typesafe.akka"          %% "akka-actor-testkit-typed"    % Version.akka    % Test,
@@ -42,11 +63,8 @@ libraryDependencies ++= Seq(
   "ch.qos.logback"              % "logback-classic"             % "1.2.10",
   "org.typelevel"              %% "cats-core"                   % "2.7.0",
   "org.iq80.leveldb"            % "leveldb"                     % "0.12",
-  "org.fusesource.leveldbjni"   % "leveldbjni-all"              % "1.8",
-  "io.circe"                   %% "circe-core"                  % "0.14.1",
-  "io.circe"                   %% "circe-generic"               % "0.14.1",
-  "io.circe"                   %% "circe-parser"                % "0.14.1"
-)
+  "org.fusesource.leveldbjni"   % "leveldbjni-all"              % "1.8"
+) ++ scalatest ++ circe
 
 //https://tpolecat.github.io/2017/04/25/scalac-flags.html
 
