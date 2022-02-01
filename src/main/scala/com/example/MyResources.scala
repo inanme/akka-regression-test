@@ -3,9 +3,8 @@ package com.example
 import akka.actor.{ ActorSystem, Terminated }
 import com.typesafe.config.{ Config, ConfigFactory }
 
+import scala.concurrent.duration.{ Duration, _ }
 import scala.concurrent.{ Await, ExecutionContextExecutor, Future }
-import scala.concurrent.duration.Duration
-import scala.concurrent.duration._
 
 trait MyResources {
   implicit val system: ActorSystem                = ActorSystem("some-system")
@@ -16,7 +15,8 @@ trait MyResources {
 }
 
 trait MyRemoteResourcesReceiver {
-  implicit val system: ActorSystem                = ActorSystem("receiver", ConfigFactory.load().getConfig("receiver"))
+  implicit val system: ActorSystem =
+    ActorSystem("receiver", ConfigFactory.load().getConfig("receiver"))
   implicit val executor: ExecutionContextExecutor = system.dispatcher
 }
 

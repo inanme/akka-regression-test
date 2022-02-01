@@ -1,7 +1,7 @@
 package com.example
 
-import akka.actor._
 import akka.actor.Actor._
+import akka.actor._
 import akka.event.LoggingReceive
 
 object Doubler {

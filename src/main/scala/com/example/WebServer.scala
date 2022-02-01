@@ -8,11 +8,11 @@ import akka.stream.scaladsl.Flow
 package fjdksla349 {
 
   import akka.http.scaladsl.model.headers.RawHeader
-  import akka.http.scaladsl.server.{Directive0, Directive1, Route}
+  import akka.http.scaladsl.server.{ Directive0, Directive1, Route }
 
   object Handler2 extends App with MyResources {
     val handler: HttpRequest => HttpResponse = _ => HttpResponse(status = StatusCodes.BadRequest)
-    Http().bindAndHandle(Flow.fromFunction(handler), "localhost", 8080)
+    Http().newServerAt("localhost", 8080).bindFlow(Flow.fromFunction(handler))
   }
   object Route132 extends App with MyResources {
     val route =
@@ -21,7 +21,7 @@ package fjdksla349 {
           complete(s"hello $name")
         }
       }
-    Http().bindAndHandle(route, "localhost", 8080)
+    Http().newServerAt("localhost", 8080).bind(route)
   }
   object Route13 extends App with MyResources {
     val route =
@@ -30,7 +30,7 @@ package fjdksla349 {
           complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
         }
       }
-    Http().bindAndHandle(route, "localhost", 8080)
+    Http().newServerAt("localhost", 8080).bind(route)
   }
 
   object Route14 extends App with MyResources {
@@ -48,6 +48,6 @@ package fjdksla349 {
         complete(i.toString)
       }
     }
-    Http().bindAndHandle(Route.seal(route), "localhost", 8080)
+    Http().newServerAt("localhost", 8080).bind(Route.seal(route))
   }
 }

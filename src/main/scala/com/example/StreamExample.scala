@@ -1,10 +1,11 @@
 package com.example
 
-import java.nio.file.Paths
 import akka._
 import akka.stream._
 import akka.stream.scaladsl._
 import akka.util.ByteString
+
+import java.nio.file.Paths
 import scala.concurrent._
 import scala.concurrent.duration._
 
@@ -101,9 +102,9 @@ object Tweets extends App with MyResources {
 }
 object Kros extends App with MyResources {
   //in, out,mat
-  val so: Source[Int, NotUsed]              = Source(1 to 10)
-  val fb: Flow[String, ByteString, NotUsed] = Flow[String].map(s => ByteString(s + "\n"))
-  val fi: Flow[Int, Int, NotUsed]           = Flow[Int].map(_ + 1)
+  val so: Source[Int, NotUsed]                 = Source(1 to 10)
+  val fb: Flow[String, ByteString, NotUsed]    = Flow[String].map(s => ByteString(s + "\n"))
+  val fi: Flow[Int, Int, NotUsed]              = Flow[Int].map(_ + 1)
   val sink: Sink[ByteString, Future[IOResult]] = FileIO.toPath(Paths.get("X.confx"))
   //in, mat
   val x0: Sink[String, NotUsed]                     = fb.to(sink) //to=toMat(sink)(Keep.left)

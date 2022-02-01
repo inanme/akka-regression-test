@@ -4,13 +4,16 @@ import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.testkit.TestKit
 import akka.util.Timeout
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
+
 import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContext, Future }
 
 class BasicFutureTest
     extends TestKit(ActorSystem("Doubles-actor"))
-    with org.scalatest.wordspec.AnyWordSpecLike
-    with org.scalatest.matchers.should.Matchers {
+    with AnyWordSpecLike
+    with Matchers {
   implicit val timeout: Timeout     = 100 milliseconds
   implicit val ec: ExecutionContext = system.dispatcher
   "Doubler" should {

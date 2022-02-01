@@ -2,13 +2,12 @@ package com.example
 
 import akka.actor.ActorSystem
 import akka.testkit.{ TestKit, TestProbe }
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.duration._
 
-class BasicTest
-    extends TestKit(ActorSystem("Doubles-actor"))
-    with org.scalatest.wordspec.AnyWordSpecLike
-    with org.scalatest.matchers.should.Matchers {
+class BasicTest extends TestKit(ActorSystem("Doubles-actor")) with AnyWordSpecLike with Matchers {
 
   "Doubler" should {
     "double" in {

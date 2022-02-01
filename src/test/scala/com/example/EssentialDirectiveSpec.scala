@@ -7,13 +7,12 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.unmarshalling.{ FromEntityUnmarshaller, Unmarshaller }
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.Future
 
-class EssentialDirectiveSpec
-    extends org.scalatest.flatspec.AnyFlatSpec
-    with org.scalatest.matchers.should.Matchers
-    with ScalatestRouteTest {
+class EssentialDirectiveSpec extends AnyFlatSpec with Matchers with ScalatestRouteTest {
 
   import akka.http.scaladsl.model.MediaTypes._
 
@@ -62,7 +61,7 @@ class EssentialDirectiveSpec
   it should "not work" in new Setup {
     Get("/?a=-18") ~> Route.seal(route) ~> check {
       status shouldBe StatusCodes.NotFound
-      header("x").get.value() shouldBe "y"
+      intercept[java.util.NoSuchElementException](header("x").get.value() shouldBe "y")
     }
   }
 

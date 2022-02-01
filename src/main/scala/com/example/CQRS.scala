@@ -11,7 +11,7 @@ package event {
   trait Event
 }
 
-import event._
+import com.example.event._
 
 class EventProtoBufSerializer extends akka.serialization.SerializerWithStringManifest {
   override def identifier: Int = 9001

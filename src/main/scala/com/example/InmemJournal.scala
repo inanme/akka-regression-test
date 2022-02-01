@@ -1,12 +1,12 @@
 package com.example
 
+import akka.persistence.journal.AsyncWriteJournal
+import akka.persistence.{ AtomicWrite, PersistentRepr }
+
 import java.util.concurrent.atomic.AtomicBoolean
 import scala.collection.immutable
 import scala.concurrent.Future
 import scala.util.Try
-import akka.persistence.journal.AsyncWriteJournal
-import akka.persistence.PersistentRepr
-import akka.persistence.AtomicWrite
 
 abstract class JournalBase extends AsyncWriteJournal {
   override def asyncReadHighestSequenceNr(

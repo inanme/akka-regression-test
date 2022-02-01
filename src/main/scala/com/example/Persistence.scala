@@ -1,13 +1,14 @@
 package com.example
 
-import akka.actor._
 import akka.actor.Actor._
-import akka.pattern._
+import akka.actor._
 import akka.event._
+import akka.pattern._
 import akka.persistence._
+import com.typesafe.scalalogging.Logger
+
 import scala.concurrent._
 import scala.concurrent.duration._
-import com.typesafe.scalalogging.Logger
 
 package a38409324 {
 
@@ -15,7 +16,8 @@ package a38409324 {
     def props = Props(new MyPersistentActor)
   }
 
-  import command._, event._
+  import com.example.command._
+  import com.example.event._
 
   class MyPersistentActor extends PersistentActor with ActorLogging {
     override val persistenceId: String = "101"

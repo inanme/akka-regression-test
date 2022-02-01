@@ -2,9 +2,10 @@ package com.example
 
 import akka._
 import akka.actor._
+import akka.event._
 import akka.stream._
 import akka.stream.scaladsl._
-import akka.event._
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -15,11 +16,11 @@ package p394034i {
     def props: Props = Props(new EvenOdd)
   }
 
-  import EvenOdd._
+  import com.example.p394034i.EvenOdd._
 
   class EvenOdd extends Actor with ActorLogging {
     def receive: Receive = even
-    def hasSender() = sender() != context.system.deadLetters
+    def hasSender()      = sender() != context.system.deadLetters
     def odd: Receive =
       LoggingReceive {
         case Message(curr) =>
@@ -41,7 +42,7 @@ package p394034i {
   }
 
   object Main extends App with MyResources {
-    val ref1         = system.actorOf(EvenOdd.props, "even-odd")
+    val ref1 = system.actorOf(EvenOdd.props, "even-odd")
     ref1.tell(Message(0), ActorRef.noSender)
     Await.ready(system.whenTerminated, Duration.Inf)
   }

@@ -1,8 +1,9 @@
 package com.example
 
 import akka.actor._
-import akka.cluster._
 import akka.cluster.ClusterEvent._
+import akka.cluster._
+
 import scala.concurrent._
 import scala.concurrent.duration._
 

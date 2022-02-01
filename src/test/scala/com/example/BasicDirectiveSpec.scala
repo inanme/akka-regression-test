@@ -6,13 +6,12 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.unmarshalling.{ FromEntityUnmarshaller, Unmarshaller }
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.Future
 
-class BasicDirectiveSpec
-    extends org.scalatest.flatspec.AnyFlatSpec
-    with org.scalatest.matchers.should.Matchers
-    with ScalatestRouteTest {
+class BasicDirectiveSpec extends AnyFlatSpec with Matchers with ScalatestRouteTest {
 
   import akka.http.scaladsl.model.MediaTypes._
 

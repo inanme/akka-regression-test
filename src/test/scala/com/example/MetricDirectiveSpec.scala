@@ -1,15 +1,14 @@
 package com.example
 
-import java.util.concurrent.atomic.AtomicLong
-
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
-class MetricDirectiveSpec
-    extends org.scalatest.freespec.AnyFreeSpec
-    with org.scalatest.matchers.should.Matchers
-    with ScalatestRouteTest {
+import java.util.concurrent.atomic.AtomicLong
+
+class MetricDirectiveSpec extends AnyFreeSpec with Matchers with ScalatestRouteTest {
 
   "The Metric Directive" - {
     "will increment just once" in {

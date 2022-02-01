@@ -1,8 +1,9 @@
 package com.example
 
 import akka.actor._
-import akka.util._
 import akka.pattern._
+import akka.util._
+
 import scala.concurrent._
 import scala.concurrent.duration._
 

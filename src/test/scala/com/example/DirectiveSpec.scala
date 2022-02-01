@@ -1,15 +1,15 @@
 package com.example
 
-import java.util.UUID
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
-class DirectiveSpec
-    extends org.scalatest.freespec.AnyFreeSpec
-    with org.scalatest.matchers.should.Matchers
-    with ScalatestRouteTest {
+import java.util.UUID
+
+class DirectiveSpec extends AnyFreeSpec with Matchers with ScalatestRouteTest {
 
   def generateUuid: Directive1[UUID] =
     //provide(UUID.randomUUID)

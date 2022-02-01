@@ -1,6 +1,7 @@
 package com.example
 
 import akka.actor._
+
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
@@ -10,7 +11,7 @@ object PingPong {
   case object EndOfGame
 }
 
-import PingPong._
+import com.example.PingPong._
 
 class PingPong extends Actor {
 

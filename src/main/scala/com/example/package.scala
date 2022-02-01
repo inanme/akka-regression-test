@@ -1,9 +1,8 @@
 package com
 
-import java.util.concurrent.TimeUnit
-
 import com.typesafe.scalalogging.Logger
 
+import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.FiniteDuration
 import scala.util._
 

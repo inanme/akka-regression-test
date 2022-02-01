@@ -1,13 +1,12 @@
 package com.example
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
-import Directives._
+import akka.http.scaladsl.testkit.ScalatestRouteTest
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class FullTestKitExampleSpec
-    extends org.scalatest.wordspec.AnyWordSpecLike
-    with org.scalatest.matchers.should.Matchers
-    with ScalatestRouteTest {
+class FullTestKitExampleSpec extends AnyWordSpecLike with Matchers with ScalatestRouteTest {
 
   val smallRoute =
     get {

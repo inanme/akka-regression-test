@@ -2,12 +2,14 @@ package com.example
 
 import akka.actor._
 import akka.testkit._
-import org.scalatest._
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
 class EmptyTest
     extends TestKit(ActorSystem("MySpec"))
-    with org.scalatest.wordspec.AnyWordSpecLike
-    with org.scalatest.matchers.should.Matchers
+    with AnyWordSpecLike
+    with Matchers
     with ImplicitSender
     with BeforeAndAfterAll {
 

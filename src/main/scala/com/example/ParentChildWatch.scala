@@ -91,8 +91,6 @@ class Parent extends Actor with ActorLogging {
       s"my-random-router.${System.currentTimeMillis()}"
     )
 
-  import context.dispatcher
-
   val timerHandle: Cancellable = context.system.scheduler.scheduleAtFixedRate(
     initialDelay = 2 second,
     interval = 2 second,

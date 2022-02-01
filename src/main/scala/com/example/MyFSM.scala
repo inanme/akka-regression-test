@@ -2,6 +2,7 @@ package com.example
 
 import akka.actor._
 import akka.event.LoggingReceive
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -20,7 +21,7 @@ package p3849jfdksl {
     def props = Props(new MyFSM)
   }
 
-  import MyFSM._
+  import com.example.p3849jfdksl.MyFSM._
 
   class MyFSM extends FSM[State, Data] {
     startWith(Idle, Uninitialized)

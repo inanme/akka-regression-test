@@ -1,13 +1,7 @@
 package com.example
 
+import akka.kafka._
 import akka.kafka.scaladsl.{ Committer, Consumer, Producer }
-import akka.kafka.{
-  CommitterSettings,
-  ConsumerSettings,
-  ProducerMessage,
-  ProducerSettings,
-  Subscriptions
-}
 import akka.stream.scaladsl.{ Keep, Sink, Source }
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -46,7 +40,7 @@ object MyAkkaKafka extends MyResources {
 
 }
 
-import MyAkkaKafka._
+import com.example.MyAkkaKafka._
 
 object MyAkkaKafkaProducer extends App {
   Source(1 to 10)

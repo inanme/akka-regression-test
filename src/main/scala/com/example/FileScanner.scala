@@ -1,12 +1,11 @@
 package com.example
 
-import java.io.File
-
 import akka.actor._
 import akka.event.LoggingReceive
 import akka.pattern.{ BackoffOpts, BackoffSupervisor }
 import com.typesafe.config.ConfigFactory
 
+import java.io.File
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.Await
 import scala.concurrent.duration._

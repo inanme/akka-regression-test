@@ -91,7 +91,8 @@ package fdjsklfjdsklnfdmbtriocxkla {
   class SupervisingActor(context: ActorContext[String]) extends AbstractBehavior[String](context) {
     private val child = context.spawn(
       Behaviors.supervise(SupervisedActor()).onFailure(SupervisorStrategy.restart),
-      name = "supervised-actor")
+      name = "supervised-actor"
+    )
 
     override def onMessage(msg: String): Behavior[String] =
       msg match {

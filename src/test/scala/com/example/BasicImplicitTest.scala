@@ -3,13 +3,15 @@ package com.example
 import akka.actor._
 import akka.testkit._
 import org.scalatest.concurrent.Eventually
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.duration._
 
 class BasicImplicitTest
     extends TestKit(ActorSystem("Doubles-actor"))
-    with org.scalatest.wordspec.AnyWordSpecLike
-    with org.scalatest.matchers.should.Matchers
+    with AnyWordSpecLike
+    with Matchers
     with ImplicitSender
     with Eventually {
 
