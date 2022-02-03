@@ -2,7 +2,7 @@ name := """makka"""
 version := "1.0"
 scalaVersion := "2.13.8"
 
-PB.targets in Compile := Seq(
+Compile / PB.targets := Seq(
   scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
 )
 
@@ -16,55 +16,67 @@ val Version = new {
   val scalapb             = "0.10.7"
 }
 
-val scalatest = Seq(
-  "org.scalatest"     %% "scalatest"       % Version.scalatest           % Test,
-  "org.scalatestplus" %% "scalacheck-1-15" % Version.scalatestScalacheck % Test
-)
+val dependencies = new {
+  val scalatest = Seq(
+    "org.scalatest"     %% "scalatest"       % Version.scalatest           % Test,
+    "org.scalatestplus" %% "scalacheck-1-15" % Version.scalatestScalacheck % Test
+  )
 
-val circe = Seq(
-  "io.circe" %% "circe-core"    % "0.14.1",
-  "io.circe" %% "circe-generic" % "0.14.1",
-  "io.circe" %% "circe-parser"  % "0.14.1"
-)
+  val circe = Seq(
+    "io.circe" %% "circe-core"    % "0.14.1",
+    "io.circe" %% "circe-generic" % "0.14.1",
+    "io.circe" %% "circe-parser"  % "0.14.1"
+  )
+
+  val config = Seq(
+    "com.github.pureconfig" %% "pureconfig"      % "0.17.1",
+    "com.github.pureconfig" %% "pureconfig-cats" % "0.17.1",
+    "com.typesafe"           % "config"          % "1.4.2"
+  )
+
+  val akka = Seq(
+    "com.typesafe.akka" %% "akka-actor"                  % Version.akka,
+    "com.typesafe.akka" %% "akka-actor-testkit-typed"    % Version.akka % Test,
+    "com.typesafe.akka" %% "akka-actor-typed"            % Version.akka,
+    "com.typesafe.akka" %% "akka-cluster"                % Version.akka,
+    "com.typesafe.akka" %% "akka-cluster-metrics"        % Version.akka,
+    "com.typesafe.akka" %% "akka-cluster-sharding"       % Version.akka,
+    "com.typesafe.akka" %% "akka-cluster-sharding-typed" % Version.akka,
+    "com.typesafe.akka" %% "akka-cluster-tools"          % Version.akka,
+    "com.typesafe.akka" %% "akka-cluster-tools"          % Version.akka,
+    "com.typesafe.akka" %% "akka-cluster-typed"          % Version.akka,
+    "com.typesafe.akka" %% "akka-distributed-data"       % Version.akka,
+    "com.typesafe.akka" %% "akka-http-spray-json"        % Version.akkaHttp,
+    "com.typesafe.akka" %% "akka-http"                   % Version.akkaHttp,
+    "com.typesafe.akka" %% "akka-http-core"              % Version.akkaHttp,
+    "com.typesafe.akka" %% "akka-http-jackson"           % Version.akkaHttp,
+    "com.typesafe.akka" %% "akka-http-testkit"           % Version.akkaHttp,
+    "com.typesafe.akka" %% "akka-multi-node-testkit"     % Version.akka % Test,
+    "com.typesafe.akka" %% "akka-osgi"                   % Version.akka,
+    "com.typesafe.akka" %% "akka-persistence"            % Version.akka,
+    "com.typesafe.akka" %% "akka-persistence-query"      % Version.akka,
+    "com.typesafe.akka" %% "akka-persistence-tck"        % Version.akka,
+    "com.typesafe.akka" %% "akka-persistence-typed"      % Version.akka,
+    "com.typesafe.akka" %% "akka-remote"                 % Version.akka,
+    "com.typesafe.akka" %% "akka-serialization-jackson"  % Version.akka,
+    "com.typesafe.akka" %% "akka-slf4j"                  % Version.akka,
+    "com.typesafe.akka" %% "akka-stream"                 % Version.akka,
+    "com.typesafe.akka" %% "akka-stream-kafka"           % Version.akkaKafka,
+    "com.typesafe.akka" %% "akka-stream-testkit"         % Version.akka % Test,
+    "com.typesafe.akka" %% "akka-stream-typed"           % Version.akka,
+    "com.typesafe.akka" %% "akka-testkit"                % Version.akka % Test
+  )
+}
 
 libraryDependencies ++= Seq(
-  "com.typesafe.akka"          %% "akka-actor"                  % Version.akka,
-  "com.typesafe.akka"          %% "akka-actor-testkit-typed"    % Version.akka    % Test,
-  "com.typesafe.akka"          %% "akka-actor-typed"            % Version.akka,
-  "com.typesafe.akka"          %% "akka-cluster"                % Version.akka,
-  "com.typesafe.akka"          %% "akka-cluster-metrics"        % Version.akka,
-  "com.typesafe.akka"          %% "akka-cluster-sharding"       % Version.akka,
-  "com.typesafe.akka"          %% "akka-cluster-sharding-typed" % Version.akka,
-  "com.typesafe.akka"          %% "akka-cluster-tools"          % Version.akka,
-  "com.typesafe.akka"          %% "akka-cluster-tools"          % Version.akka,
-  "com.typesafe.akka"          %% "akka-cluster-typed"          % Version.akka,
-  "com.typesafe.akka"          %% "akka-distributed-data"       % Version.akka,
-  "com.typesafe.akka"          %% "akka-http"                   % Version.akkaHttp,
-  "com.typesafe.akka"          %% "akka-http-core"              % Version.akkaHttp,
-  "com.typesafe.akka"          %% "akka-http-jackson"           % Version.akkaHttp,
-  "com.typesafe.akka"          %% "akka-http-testkit"           % Version.akkaHttp,
-  "com.typesafe.akka"          %% "akka-multi-node-testkit"     % Version.akka    % Test,
-  "com.typesafe.akka"          %% "akka-osgi"                   % Version.akka,
-  "com.typesafe.akka"          %% "akka-persistence"            % Version.akka,
-  "com.typesafe.akka"          %% "akka-persistence-query"      % Version.akka,
-  "com.typesafe.akka"          %% "akka-persistence-tck"        % Version.akka,
-  "com.typesafe.akka"          %% "akka-persistence-typed"      % Version.akka,
-  "com.typesafe.akka"          %% "akka-remote"                 % Version.akka,
-  "com.typesafe.akka"          %% "akka-serialization-jackson"  % Version.akka,
-  "com.typesafe.akka"          %% "akka-slf4j"                  % Version.akka,
-  "com.typesafe.akka"          %% "akka-stream"                 % Version.akka,
-  "com.typesafe.akka"          %% "akka-stream-kafka"           % Version.akkaKafka,
-  "com.typesafe.akka"          %% "akka-stream-testkit"         % Version.akka    % Test,
-  "com.typesafe.akka"          %% "akka-stream-typed"           % Version.akka,
-  "com.typesafe.akka"          %% "akka-testkit"                % Version.akka    % Test,
-  "org.json4s"                 %% "json4s-jackson"              % Version.json4s,
-  "com.thesamet.scalapb"       %% "scalapb-runtime"             % Version.scalapb % "protobuf",
-  "com.typesafe.scala-logging" %% "scala-logging"               % "3.9.4",
-  "ch.qos.logback"              % "logback-classic"             % "1.2.10",
-  "org.typelevel"              %% "cats-core"                   % "2.7.0",
-  "org.iq80.leveldb"            % "leveldb"                     % "0.12",
-  "org.fusesource.leveldbjni"   % "leveldbjni-all"              % "1.8"
-) ++ scalatest ++ circe
+  "org.json4s"                 %% "json4s-jackson"  % Version.json4s,
+  "com.thesamet.scalapb"       %% "scalapb-runtime" % Version.scalapb % "protobuf",
+  "com.typesafe.scala-logging" %% "scala-logging"   % "3.9.4",
+  "ch.qos.logback"              % "logback-classic" % "1.2.10",
+  "org.typelevel"              %% "cats-core"       % "2.7.0",
+  "org.iq80.leveldb"            % "leveldb"         % "0.12",
+  "org.fusesource.leveldbjni"   % "leveldbjni-all"  % "1.8"
+) ++ dependencies.scalatest ++ dependencies.circe ++ dependencies.config ++ dependencies.akka
 
 //https://tpolecat.github.io/2017/04/25/scalac-flags.html
 
@@ -108,7 +120,9 @@ scalacOptions ++= Seq(
   "-Ywarn-unused:params",    // Warn if a value parameter is unused.
   "-Ywarn-unused:patvars",   // Warn if a variable bound in a pattern is unused.
   "-Ywarn-unused:privates",  // Warn if a private member is unused.
-  "-Ywarn-value-discard"     // Warn when non-Unit expression results are unused.
+  "-Ywarn-value-discard",    // Warn when non-Unit expression results are unused.
+  "-Vimplicits",            //https://github.com/tek/splain
+  "-Vtype-diffs"            //https://github.com/tek/splain
 )
 
 scalacOptions in (Compile, console) --= Seq("-Ywarn-unused:imports", "-Xfatal-warnings")

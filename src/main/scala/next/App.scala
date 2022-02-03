@@ -6,7 +6,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.{ Marshaller, ToEntityMarshaller }
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server._
-import akka.http.scaladsl.settings.{ ParserSettings, ServerSettings }
+import akka.http.scaladsl.settings.{ ParserSettings, RoutingSettings, ServerSettings }
 import akka.http.scaladsl.unmarshalling.{ FromEntityUnmarshaller, Unmarshaller }
 import akka.util.Timeout
 import io.circe.generic.JsonCodec
@@ -17,6 +17,8 @@ import io.circe.{ Decoder, Encoder }
 import java.util.UUID
 import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContext, ExecutionContextExecutor, Future }
+import scala.util.Try
+import scala.util.control.NoStackTrace
 
 @JsonCodec
 case class Signup(email: String, password: String)
@@ -78,12 +80,16 @@ object App extends Directives {
 
   def newSignup: Directive1[Signup] = post & entity(as[Signup])
 
-  def getSignup: Directive1[Signup] = get & provide(Signup(email = "???", password = "???"))
+  val aSignup = Signup(email = "???", password = "???")
+
+  def getSignup: Directive1[Signup] = get & provide(aSignup)
 
   def getMaybeSignup1: Directive1[Option[Signup]] =
     get & provide(Option(Signup(email = "???", password = "???")))
 
   def getMaybeSignup: Directive1[Option[Signup]] = get & provide(Option.empty[Signup])
+
+  def getTrySignup: Directive1[Try[Signup]] = get & provide(Try(aSignup))
 
   def getListSignup: Directive1[List[Signup]] = get & provide(List.empty[Signup])
 
@@ -97,12 +103,47 @@ object App extends Directives {
   def getPrivateUUID: Directive1[UUID] = pathPrefix("private") & get & pathPrefix(JavaUUID)
 
   def completeOptional[A: ToEntityMarshaller](option: Option[A]): Route =
-    option.fold(
-      complete(
-        HttpResponse(status = StatusCodes.NotFound)
-      )
-    )(it => complete(it))
+    option.fold(complete(HttpResponse(status = StatusCodes.NotFound)))(it => complete(it))
 
+  def completeTry[A: ToEntityMarshaller](aTry: Try[A]): Route =
+    aTry.fold(failWith, it => complete(it))
+
+  def getParamP: Directive[(Int, Int)] =
+    /*get &*/ parameter("p".as[Int].optional).flatMap {
+      case Some(p) => tprovide((p, 1))
+      case None    => reject(ValidationRejection("missing p"))
+    }
+
+  object MissingP extends Rejection
+  def getParamP2: Directive[(Int, Int)] =
+    /*get &*/ parameter("p".as[Int].optional).flatMap {
+      case Some(p) => tprovide((p, 1))
+      case None    => reject(MissingP)
+    }
+
+  val rawRoute: Route = { ctx =>
+    ctx.request.discardEntityBytes(ctx.materializer)
+    ctx.complete("ok")
+  }
+
+  val MissingPRejectionHandler: RejectionHandler = RejectionHandler
+    .newBuilder()
+    .handle {
+      case `MissingP` => complete(StatusCodes.BadRequest, "missing p")
+    }
+    .result()
+    .withFallback(RejectionHandler.default)
+
+  object MissingPException extends RuntimeException with NoStackTrace
+  def AppExceptionHandler(implicit settings: RoutingSettings): ExceptionHandler =
+    ExceptionHandler {
+      case App.`MissingPException` =>
+        ctx => {
+          ctx.request.discardEntityBytes(ctx.materializer)
+          ctx.complete(StatusCodes.Conflict, "this is not right")
+        }
+    }.withFallback(ExceptionHandler.default(settings))
+  def failing: Directive0 = throw MissingPException
 }
 
 object Main extends scala.App {
@@ -115,9 +156,7 @@ object Main extends scala.App {
     .withParserSettings(
       ParserSettings
         .forServer(system)
-        .withCustomMediaTypes(
-          App.`application/vnd.app.v1+json`
-        )
+        .withCustomMediaTypes(App.`application/vnd.app.v1+json`)
     )
 
   Http()

@@ -1,8 +1,8 @@
 package next
 
-import akka.http.scaladsl.model.headers.`Content-Type`
-import akka.http.scaladsl.model.{ ContentTypes, StatusCodes }
-import akka.http.scaladsl.server.Directives
+import akka.http.scaladsl.model.headers.{ Accept, `Content-Type` }
+import akka.http.scaladsl.model.{ ContentTypes, MediaTypes, StatusCodes }
+import akka.http.scaladsl.server.{ Directives, ValidationRejection }
 import akka.http.scaladsl.testkit.{ RouteTestTimeout, ScalatestRouteTest }
 import org.scalacheck.Gen
 import org.scalatest.flatspec.AnyFlatSpec
@@ -49,7 +49,7 @@ class AppSpec
   it should "get single signup" in {
     Get() ~> App.getSignup(complete(_)) ~> check {
       handled shouldBe true
-      responseAs[Signup] shouldBe Signup("???", "???")
+      responseAs[Signup] shouldBe App.aSignup
       header[`Content-Type`] shouldBe Some(`Content-Type`(App.`application/vnd.app.v1+json`))
     }
   }
@@ -61,6 +61,34 @@ class AppSpec
       contentType shouldBe ContentTypes.NoContentType
       handled shouldBe true
       status shouldBe StatusCodes.NotFound
+    }
+  }
+
+  it should "try signup" in {
+    Get() ~> App.getTrySignup(App.completeTry) ~> check {
+      println(response)
+      responseAs[Signup] shouldBe App.aSignup
+      handled shouldBe true
+      status shouldBe StatusCodes.OK
+    }
+  }
+
+  it should "read header" in {
+    ContentTypes.`application/json`
+    MediaTypes.`application/json`
+    Get() ~> Accept(MediaTypes.`text/plain`) ~> headerValueByType(Accept)(it =>
+      complete(it.value())
+    ) ~> check {
+      responseAs[String] shouldBe "text/plain"
+      handled shouldBe true
+      status shouldBe StatusCodes.OK
+    }
+  }
+
+  it should "use rawroute" in {
+    Get() ~> App.rawRoute ~> check {
+      handled shouldBe true
+      status shouldBe StatusCodes.OK
     }
   }
 
@@ -84,7 +112,6 @@ class AppSpec
 
   it should "get the uuid path parameter" in {
     val uuid = UUID.randomUUID()
-
     Get(s"/private/${uuid.toString}") ~> App.getPrivateUUID(it => complete(it.toString)) ~> check {
       responseAs[String] shouldBe uuid.toString
     }
@@ -93,6 +120,41 @@ class AppSpec
   it should "reject invalid uuid path parameter" in {
     Get(s"/private/thisisnotuuid") ~!> App.getPrivateUUID(it => complete(it.toString)) ~> check {
       status shouldBe StatusCodes.NotFound
+    }
+  }
+
+  it should "be rejected" in {
+    Get() ~> App.getParamP { case (_, _) => complete("ok") } ~> check {
+      rejections should contain(ValidationRejection("missing p"))
+    }
+  }
+
+  it should "be rejected2" in {
+    Get() ~> (handleRejections(App.MissingPRejectionHandler) & App.getParamP2) {
+      case (_, _) => complete("ok")
+    } ~> check {
+      status shouldBe StatusCodes.BadRequest
+      responseAs[String] shouldBe "missing p"
+    }
+  }
+
+  it should "handle exception" in {
+    Get() ~> handleExceptions(App.AppExceptionHandler)(App.failing(complete("ok"))) ~> check {
+      withClue("first") {
+        status shouldBe StatusCodes.Conflict
+      }
+    }
+
+    intercept[App.MissingPException.type] {
+      handleExceptions(App.AppExceptionHandler) & App.failing
+    }
+  }
+
+  it should "filter" in {
+    Get() ~> (App.getInt.filter(_ > 1, ValidationRejection("less than 2")) & complete(
+      "ok"
+    )) ~> check {
+      rejections should contain(ValidationRejection("less than 2"))
     }
   }
 
