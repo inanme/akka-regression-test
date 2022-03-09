@@ -1,8 +1,15 @@
 package next
 
+import akka.actor.Scheduler
+import akka.http.scaladsl.model.StatusCodes.InternalServerError
 import akka.http.scaladsl.model.headers.{ Accept, `Content-Type` }
 import akka.http.scaladsl.model.{ ContentTypes, MediaTypes, StatusCodes }
-import akka.http.scaladsl.server.{ Directives, ValidationRejection }
+import akka.http.scaladsl.server.{
+  CircuitBreakerOpenRejection,
+  Directives,
+  Route,
+  ValidationRejection
+}
 import akka.http.scaladsl.testkit.{ RouteTestTimeout, ScalatestRouteTest }
 import org.scalacheck.Gen
 import org.scalatest.flatspec.AnyFlatSpec
@@ -155,6 +162,29 @@ class AppSpec
       "ok"
     )) ~> check {
       rejections should contain(ValidationRejection("less than 2"))
+    }
+  }
+
+  it should "run with circuit breaker" in {
+    implicit val scheduler: Scheduler = system.scheduler
+    val route                         = AppWithCircuitBreaker.route
+    Get("/divide/10/2") ~> route ~> check {
+      responseAs[String] shouldEqual "The result was 5"
+    }
+
+    Get("/divide/10/0") ~> Route.seal(route) ~> check {
+      status shouldEqual InternalServerError
+      responseAs[String] shouldEqual "An error occurred: / by zero"
+    } // opens the circuit breaker
+
+    Get("/divide/10/2") ~> route ~> check {
+      rejection shouldBe a[CircuitBreakerOpenRejection]
+    }
+
+    Thread.sleep(AppWithCircuitBreaker.resetTimeout.toMillis + 200)
+
+    Get("/divide/10/2") ~> route ~> check {
+      responseAs[String] shouldEqual "The result was 5"
     }
   }
 

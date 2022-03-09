@@ -1,13 +1,15 @@
 package next
 
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, Scheduler }
 import akka.event.BusLogging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.{ Marshaller, ToEntityMarshaller }
+import akka.http.scaladsl.model.StatusCodes.InternalServerError
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.settings.{ ParserSettings, RoutingSettings, ServerSettings }
 import akka.http.scaladsl.unmarshalling.{ FromEntityUnmarshaller, Unmarshaller }
+import akka.pattern.CircuitBreaker
 import akka.util.Timeout
 import io.circe.generic.JsonCodec
 import io.circe.parser._
@@ -17,7 +19,7 @@ import io.circe.{ Decoder, Encoder }
 import java.util.UUID
 import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContext, ExecutionContextExecutor, Future }
-import scala.util.Try
+import scala.util._
 import scala.util.control.NoStackTrace
 
 @JsonCodec
@@ -85,7 +87,7 @@ object App extends Directives {
   def getSignup: Directive1[Signup] = get & provide(aSignup)
 
   def getMaybeSignup1: Directive1[Option[Signup]] =
-    get & provide(Option(Signup(email = "???", password = "???")))
+    get & provide(Option(aSignup))
 
   def getMaybeSignup: Directive1[Option[Signup]] = get & provide(Option.empty[Signup])
 
@@ -163,4 +165,33 @@ object Main extends scala.App {
     .newServerAt(interface = "0.0.0.0", port = 8080)
     .withSettings(serverSettings)
     .bindFlow(App.getMaybeSignup(App.completeOptional))
+}
+
+object AppWithCircuitBreaker extends Directives {
+
+  val resetTimeout: FiniteDuration = 1.second
+  def createCircuitBreaker(implicit scheduler: Scheduler, executor: ExecutionContext) =
+    new CircuitBreaker(
+      scheduler,
+      maxFailures = 1,
+      callTimeout = 5.seconds,
+      resetTimeout = resetTimeout
+    )
+
+  def divide(a: Int, b: Int)(implicit executor: ExecutionContext): Future[Int] =
+    Future {
+      a / b
+    }
+
+  def route(implicit scheduler: Scheduler, executor: ExecutionContext): Route = {
+    val breaker = createCircuitBreaker
+    path("divide" / IntNumber / IntNumber) { (a, b) =>
+      onCompleteWithBreaker(breaker)(divide(a, b)) {
+        case Success(value) =>
+          complete(s"The result was $value")
+        case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
+      }
+    }
+  }
+
 }

@@ -7,12 +7,12 @@ Compile / PB.targets := Seq(
 )
 
 val Version = new {
-  val scalatest           = "3.2.10"
+  val scalatest           = "3.2.11"
   val scalatestScalacheck = scalatest + ".0"
   val akka                = "2.6.18"
-  val akkaHttp            = "10.2.6"
-  val akkaKafka           = "2.0.3"
-  val json4s              = "3.6.8"
+  val akkaHttp            = "10.2.9"
+  val akkaKafka           = "3.0.0"
+  val json4s              = "4.0.4"
   val scalapb             = "0.10.7"
 }
 
@@ -72,7 +72,7 @@ libraryDependencies ++= Seq(
   "org.json4s"                 %% "json4s-jackson"  % Version.json4s,
   "com.thesamet.scalapb"       %% "scalapb-runtime" % Version.scalapb % "protobuf",
   "com.typesafe.scala-logging" %% "scala-logging"   % "3.9.4",
-  "ch.qos.logback"              % "logback-classic" % "1.2.10",
+  "ch.qos.logback"              % "logback-classic" % "1.2.11",
   "org.typelevel"              %% "cats-core"       % "2.7.0",
   "org.iq80.leveldb"            % "leveldb"         % "0.12",
   "org.fusesource.leveldbjni"   % "leveldbjni-all"  % "1.8"
